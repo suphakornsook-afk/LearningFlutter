@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_2/pages/counter_page.dart';
 import 'package:flutter_application_2/pages/home_page.dart';
 import 'package:flutter_application_2/pages/profile_page.dart';
 import 'package:flutter_application_2/pages/settings_page.dart';
@@ -24,6 +25,8 @@ class _FirstPageState extends State<FirstPage> {
   final List _pages = [
     //homepage
     HomePage(),
+    //counterpage
+    CounterPage(),
     //profilepage
     ProfilePage(),
     //settingspage
@@ -71,11 +74,15 @@ class _FirstPageState extends State<FirstPage> {
       ),
       body: _pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
         currentIndex: _selectedIndex,
         onTap: _navigateBottomBar,
         items: [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-
+          BottomNavigationBarItem(
+            icon: Icon(Icons.add_box_outlined),
+            label: "TapTap Counter",
+          ),
           BottomNavigationBarItem(icon: Icon(Icons.person_2), label: "Profile"),
 
           BottomNavigationBarItem(

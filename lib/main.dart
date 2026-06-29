@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_2/pages/counter_page.dart';
 import 'package:flutter_application_2/pages/first_page.dart';
 import 'package:flutter_application_2/pages/home_page.dart';
+import 'package:flutter_application_2/pages/profile_page.dart';
 import 'package:flutter_application_2/pages/settings_page.dart';
 
 void main() {
@@ -18,6 +20,8 @@ class MyApp extends StatelessWidget {
       routes: {
         '/firstpage': (context) => FirstPage(),
         '/homepage': (context) => HomePage(),
+        '/profile': (context) => ProfilePage(),
+        '/counterpage': (context) => CounterPage(),
         '/settingspage': (context) => SettingsPage(),
       },
     );
