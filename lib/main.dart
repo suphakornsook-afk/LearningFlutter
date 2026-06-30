@@ -4,6 +4,7 @@ import 'package:flutter_application_2/pages/first_page.dart';
 import 'package:flutter_application_2/pages/home_page.dart';
 import 'package:flutter_application_2/pages/profile_page.dart';
 import 'package:flutter_application_2/pages/settings_page.dart';
+import 'package:flutter_application_2/pages/soundboard_page.dart';
 
 void main() {
   runApp(MyApp());
@@ -23,6 +24,7 @@ class MyApp extends StatelessWidget {
         '/profile': (context) => ProfilePage(),
         '/counterpage': (context) => CounterPage(),
         '/settingspage': (context) => SettingsPage(),
+        '/soundboardpage': (context) => SoundboardPage(),
       },
     );
   }

@@ -42,6 +42,7 @@ class _FirstPageState extends State<FirstPage> {
       ),
       drawer: Drawer(
         backgroundColor: Colors.greenAccent[400],
+
         child: Column(
           children: [
             DrawerHeader(child: Icon(Icons.favorite, size: 48)),
@@ -55,6 +56,18 @@ class _FirstPageState extends State<FirstPage> {
                 Navigator.pop(context);
                 //go to HomePage
                 Navigator.pushNamed(context, '/homepage');
+              },
+            ),
+
+            //soundboard page list tile
+            ListTile(
+              leading: Icon(Icons.music_note),
+              title: Text("SOUNDBOARD"),
+              onTap: () {
+                //pop drawer first
+                Navigator.pop(context);
+                //go to HomePage
+                Navigator.pushNamed(context, '/soundboardpage');
               },
             ),
 
