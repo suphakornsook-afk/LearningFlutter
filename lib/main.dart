@@ -21,7 +21,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/firstpage': (context) => FirstPage(),
         '/homepage': (context) => HomePage(),
-        '/profile': (context) => ProfilePage(),
+        '/profilepage': (context) => ProfilePage(),
         '/counterpage': (context) => CounterPage(),
         '/settingspage': (context) => SettingsPage(),
         '/soundboardpage': (context) => SoundboardPage(),
