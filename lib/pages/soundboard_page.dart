@@ -12,9 +12,9 @@ class _SoundboardPageState extends State<SoundboardPage> {
   final AudioPlayer _audioPlayer = AudioPlayer();
 
   final List<Map<String, String>> _soundButtons = [
-    {'title': 'surprise', 'file': '/soundEffect/surprise.mp3'},
-    {'title': 'fart', 'file': '/soundEffect/fart.mp3'},
-    {'title': 'joke drum', 'file': '/soundEffect/joke_drum.mp3'},
+    {'title': 'surprise', 'file': 'soundEffect/surprise.mp3'},
+    {'title': 'fart', 'file': 'soundEffect/fart.mp3'},
+    {'title': 'joke drum', 'file': 'soundEffect/joke_drum.mp3'},
   ];
 
   @override
