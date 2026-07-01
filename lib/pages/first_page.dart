@@ -28,8 +28,6 @@ class _FirstPageState extends State<FirstPage> {
     HomePage(),
     //counterpage
     CounterPage(),
-    //profilepage
-    ProfilePage(),
     //settingspage
     SettingsPage(),
   ];
@@ -160,8 +158,8 @@ class _FirstPageState extends State<FirstPage> {
             icon: Icon(Icons.add_box_outlined),
             label: "TapTap Counter",
           ),
-          BottomNavigationBarItem(icon: Icon(Icons.person_2), label: "Profile"),
 
+          // BottomNavigationBarItem(icon: Icon(Icons.person_2), label: "Profile"),
           BottomNavigationBarItem(
             icon: Icon(Icons.settings),
             label: "Settings",
