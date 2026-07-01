@@ -98,7 +98,7 @@ class _FirstPageState extends State<FirstPage> {
             ),
             //memory game page list tile
             ListTile(
-              leading: Icon(Icons.cookie),
+              leading: Icon(Icons.child_care),
               title: Text("Memory Game"),
               onTap: () {
                 //pop drawer first
