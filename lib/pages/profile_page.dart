@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_2/pages/settings_page.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -51,6 +52,12 @@ class ProfilePage extends StatelessWidget {
                   leading: Icon(tile.icon),
                   title: Text(tile.title),
                   subtitle: Text(tile.description),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => tile.targetPage),
+                    );
+                  },
                 ),
               );
             },
@@ -65,10 +72,12 @@ class ProfileCompletionCard {
   final String title;
   final String description;
   final IconData icon;
+  final Widget targetPage;
   ProfileCompletionCard({
     required this.title,
     required this.description,
     required this.icon,
+    required this.targetPage,
   });
 }
 
@@ -77,20 +86,24 @@ List<ProfileCompletionCard> profileCompletionCards = [
     title: "Editing your profile",
     description: "Edit your profile information at any time.",
     icon: Icons.person,
+    targetPage: SettingsPage(),
   ),
   ProfileCompletionCard(
     title: "Notifications",
     description: "Manage your notification preferences.",
     icon: Icons.notifications,
+    targetPage: SettingsPage(),
   ),
   ProfileCompletionCard(
     title: "Password & Security",
     description: "Update your password and manage your security settings.",
     icon: Icons.lock,
+    targetPage: SettingsPage(),
   ),
   ProfileCompletionCard(
     title: "Settings",
     description: "Access and modify your app settings.",
     icon: Icons.settings,
+    targetPage: SettingsPage(),
   ),
 ];
