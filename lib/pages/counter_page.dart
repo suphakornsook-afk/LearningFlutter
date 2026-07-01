@@ -20,32 +20,30 @@ class _CounterPageState extends State<CounterPage> {
   //UI (user interface)
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            //message
-            Text("You Pushed The Button This Many Times:"),
-            //counter value
-            Text(_counter.toString(), style: TextStyle(fontSize: 40)),
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          //message
+          Text("You Pushed The Button This Many Times:"),
+          //counter value
+          Text(_counter.toString(), style: TextStyle(fontSize: 40)),
 
-            //button
-            ElevatedButton(
-              onPressed: _incrementCounter,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.deepPurple,
-                foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-                elevation: 5,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
-                ),
+          //button
+          ElevatedButton(
+            onPressed: _incrementCounter,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.deepPurple,
+              foregroundColor: Colors.white,
+              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+              elevation: 5,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30),
               ),
-              child: Text("Tap Me To Increase!"),
             ),
-          ],
-        ),
+            child: Text("Tap Me To Increase!"),
+          ),
+        ],
       ),
     );
   }
