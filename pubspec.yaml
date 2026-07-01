@@ -31,7 +31,6 @@ dependencies:
   flutter:
     sdk: flutter
 
-  cupertino_icons: ^1.0.8
   google_fonts: ^6.0.0
 
   # The following adds the Cupertino Icons font to your application.
@@ -63,6 +62,7 @@ flutter:
     - assets/soundEffect/surprise.mp3
     - assets/soundEffect/fart.mp3
     - assets/soundEffect/joke_drum.mp3
+    - assets/images/profile.jpg
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg

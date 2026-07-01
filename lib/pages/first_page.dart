@@ -5,7 +5,7 @@ import 'package:flutter_application_2/pages/profile_page.dart';
 import 'package:flutter_application_2/pages/settings_page.dart';
 
 class FirstPage extends StatefulWidget {
-  FirstPage({super.key});
+  const FirstPage({super.key});
 
   @override
   State<FirstPage> createState() => _FirstPageState();
@@ -68,6 +68,18 @@ class _FirstPageState extends State<FirstPage> {
                 Navigator.pop(context);
                 //go to HomePage
                 Navigator.pushNamed(context, '/soundboardpage');
+              },
+            ),
+
+            //profile page list tile
+            ListTile(
+              leading: Icon(Icons.person_2),
+              title: Text("PROFILE"),
+              onTap: () {
+                //pop drawer first
+                Navigator.pop(context);
+                //go to ProfilePage
+                Navigator.pushNamed(context, '/profilepage');
               },
             ),
 
