@@ -2,8 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_2/pages/counter_page.dart';
 import 'package:flutter_application_2/pages/home_page.dart';
-import 'package:flutter_application_2/pages/profile_page.dart';
 import 'package:flutter_application_2/pages/settings_page.dart';
+import 'package:flutter_application_2/pages/ball_sort_page.dart';
 
 class FirstPage extends StatefulWidget {
   const FirstPage({super.key});
@@ -103,6 +103,18 @@ class _FirstPageState extends State<FirstPage> {
                 Navigator.pop(context);
                 //go to MemoryGamePage
                 Navigator.pushNamed(context, '/memorygamepage');
+              },
+            ),
+
+            //ball sort game page list tile
+            ListTile(
+              leading: Icon(Icons.sports_baseball),
+              title: Text("Ball Sort Game"),
+              onTap: () {
+                //pop drawer first
+                Navigator.pop(context);
+                //go to BallSortPage
+                Navigator.pushNamed(context, '/ballsortpage');
               },
             ),
 

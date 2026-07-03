@@ -8,6 +8,7 @@ import 'package:flutter_application_2/pages/soundboard_page.dart';
 import 'package:flutter_application_2/pages/mockup_page.dart';
 import 'package:flutter_application_2/pages/cookie_page.dart';
 import 'package:flutter_application_2/pages/memoryGame_page.dart';
+import 'package:flutter_application_2/pages/ball_sort_page.dart';
 
 void main() {
   runApp(MyApp());
@@ -31,6 +32,7 @@ class MyApp extends StatelessWidget {
         '/mockuppage': (context) => MockupPage(),
         '/cookiepage': (context) => CookiePage(),
         '/memorygamepage': (context) => MemoryGamePage(),
+        '/ballsortpage': (context) => BallSortPage(),
       },
     );
   }
