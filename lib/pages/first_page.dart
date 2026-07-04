@@ -117,6 +117,17 @@ class _FirstPageState extends State<FirstPage> {
                 Navigator.pushNamed(context, '/ballsortpage');
               },
             ),
+            //pill tracker page list tile
+            ListTile(
+              leading: Icon(Icons.medical_services),
+              title: Text("Pill Tracker"),
+              onTap: () {
+                //pop drawer first
+                Navigator.pop(context);
+                //go to PillTrackerPage
+                Navigator.pushNamed(context, '/pilltrackerpage');
+              },
+            ),
 
             //mockup page list tile
             ListTile(
