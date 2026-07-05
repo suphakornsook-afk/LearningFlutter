@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class PillModel {
   final String name;
@@ -6,6 +8,17 @@ class PillModel {
   bool isTaken;
 
   PillModel({required this.name, required this.time, this.isTaken = false});
+
+  factory PillModel.fromJson(Map<String, dynamic> json) => PillModel(
+    name: json['name'],
+    time: json['time'],
+    isTaken: json['isTaken'],
+  );
+  Map<String, dynamic> toJson() => {
+    'name': name,
+    'time': time,
+    'isTaken': isTaken,
+  };
 }
 
 class PillTrackerPage extends StatefulWidget {
@@ -16,11 +29,41 @@ class PillTrackerPage extends StatefulWidget {
 }
 
 class _PillTrackerPageState extends State<PillTrackerPage> {
-  final List<PillModel> pills = [
-    PillModel(name: "Paracetamol", time: "8:00 AM"),
-    PillModel(name: "Ibuprofen", time: "12:00 PM"),
-    PillModel(name: "Aspirin", time: "6:00 PM"),
-  ];
+  List<PillModel> pills = [];
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _loadPills();
+  }
+
+  Future<void> _loadPills() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String? pillsString = prefs.getString('saved_pills');
+
+    if (pillsString != null) {
+      final List<dynamic> decodedList = jsonDecode(pillsString);
+      setState(() {
+        pills = decodedList.map((item) => PillModel.fromJson(item)).toList();
+      });
+    } else {
+      setState(() {
+        pills = [
+          PillModel(name: "Paracetamol", time: "08:00"),
+          PillModel(name: "Aspirin", time: "18:00"),
+        ];
+      });
+    }
+  }
+
+  Future<void> _savePills() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String encodedList = jsonEncode(
+      pills.map((pill) => pill.toJson()).toList(),
+    );
+    await prefs.setString('saved_pills', encodedList);
+  }
 
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _timeController = TextEditingController();
@@ -92,6 +135,7 @@ class _PillTrackerPageState extends State<PillTrackerPage> {
                       ),
                     );
                   });
+                  _savePills();
                   Navigator.pop(context);
                 },
                 style: ElevatedButton.styleFrom(
@@ -179,6 +223,7 @@ class _PillTrackerPageState extends State<PillTrackerPage> {
                               setState(() {
                                 pill.isTaken = !pill.isTaken;
                               });
+                              _savePills();
                             },
                             leading: CircleAvatar(
                               backgroundColor: pill.isTaken
@@ -212,21 +257,39 @@ class _PillTrackerPageState extends State<PillTrackerPage> {
                                     : Colors.black54,
                               ),
                             ),
-                            trailing: IconButton(
-                              icon: Icon(
-                                pill.isTaken
-                                    ? Icons.check_circle
-                                    : Icons.radio_button_unchecked,
-                                color: pill.isTaken
-                                    ? Colors.green
-                                    : Colors.grey,
-                                size: 30,
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  pill.isTaken = !pill.isTaken;
-                                });
-                              },
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: Icon(
+                                    Icons.delete_outline,
+                                    color: Colors.redAccent,
+                                  ),
+                                  onPressed: () {
+                                    setState(() {
+                                      pills.removeAt(index);
+                                    });
+                                    _savePills();
+                                  },
+                                ),
+                                IconButton(
+                                  icon: Icon(
+                                    pill.isTaken
+                                        ? Icons.check_circle
+                                        : Icons.radio_button_unchecked,
+                                    color: pill.isTaken
+                                        ? Colors.green
+                                        : Colors.grey,
+                                    size: 30,
+                                  ),
+                                  onPressed: () {
+                                    setState(() {
+                                      pill.isTaken = !pill.isTaken;
+                                    });
+                                    _savePills();
+                                  },
+                                ),
+                              ],
                             ),
                           ),
                         );
