@@ -4,19 +4,32 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class PillModel {
   final String name;
-  final String time;
+  final int hour;
+  final int minute;
   bool isTaken;
 
-  PillModel({required this.name, required this.time, this.isTaken = false});
+  PillModel({
+    required this.name,
+    required this.hour,
+    required this.minute,
+    this.isTaken = false,
+  });
+
+  String get formattedTime {
+    return "${hour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')}";
+  }
 
   factory PillModel.fromJson(Map<String, dynamic> json) => PillModel(
     name: json['name'],
-    time: json['time'],
+    hour: json['hour'],
+    minute: json['minute'],
     isTaken: json['isTaken'],
   );
+
   Map<String, dynamic> toJson() => {
     'name': name,
-    'time': time,
+    'hour': hour,
+    'minute': minute,
     'isTaken': isTaken,
   };
 }
@@ -50,8 +63,8 @@ class _PillTrackerPageState extends State<PillTrackerPage> {
     } else {
       setState(() {
         pills = [
-          PillModel(name: "Paracetamol", time: "08:00"),
-          PillModel(name: "Aspirin", time: "18:00"),
+          PillModel(name: "Paracetamol", hour: 8, minute: 0),
+          PillModel(name: "Aspirin", hour: 18, minute: 0),
         ];
       });
     }
@@ -69,6 +82,8 @@ class _PillTrackerPageState extends State<PillTrackerPage> {
   final TextEditingController _timeController = TextEditingController();
 
   void _showAddPillSheet() {
+    int selectedHour = 8;
+    int selectedMinute = 0;
     _nameController.clear();
     _timeController.clear();
 
@@ -110,11 +125,28 @@ class _PillTrackerPageState extends State<PillTrackerPage> {
             const SizedBox(height: 16),
             TextField(
               controller: _timeController,
+              readOnly: true,
               decoration: const InputDecoration(
                 labelText: "Pill Time",
                 border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.access_time),
               ),
+              onTap: () async {
+                TimeOfDay? pickedTime = await showTimePicker(
+                  context: context,
+                  initialTime: TimeOfDay.now(),
+                );
+
+                if (pickedTime != null) {
+                  selectedHour = pickedTime.hour;
+                  selectedMinute = pickedTime.minute;
+                  final String formatted =
+                      "${selectedHour.toString().padLeft(2, '0')}:${selectedMinute.toString().padLeft(2, '0')}";
+                  setState(() {
+                    _timeController.text = formatted;
+                  });
+                }
+              },
             ),
             const SizedBox(height: 24),
             SizedBox(
@@ -131,7 +163,8 @@ class _PillTrackerPageState extends State<PillTrackerPage> {
                     pills.add(
                       PillModel(
                         name: _nameController.text,
-                        time: _timeController.text,
+                        hour: selectedHour,
+                        minute: selectedMinute,
                       ),
                     );
                   });
@@ -250,7 +283,7 @@ class _PillTrackerPageState extends State<PillTrackerPage> {
                               ),
                             ),
                             subtitle: Text(
-                              "Time: ${pill.time}",
+                              "Time: ${pill.formattedTime}",
                               style: TextStyle(
                                 color: pill.isTaken
                                     ? Colors.grey
