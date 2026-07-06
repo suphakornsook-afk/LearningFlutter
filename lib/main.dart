@@ -10,8 +10,14 @@ import 'package:flutter_application_2/pages/cookie_page.dart';
 import 'package:flutter_application_2/pages/memoryGame_page.dart';
 import 'package:flutter_application_2/pages/ball_sort_page.dart';
 import 'package:flutter_application_2/pages/pill_tracker_page.dart';
+import 'package:flutter_application_2/pages/noti_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  //init notifications
+  await NotiService().initNotification();
+
   runApp(MyApp());
 }
 

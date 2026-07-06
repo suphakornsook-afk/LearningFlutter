@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_2/pages/noti_service.dart';
 
 class MockupPage extends StatelessWidget {
   const MockupPage({super.key});
@@ -41,6 +42,15 @@ class MockupPage extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                     color: const Color.fromARGB(255, 44, 44, 44),
                   ),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    NotiService().showNotification(
+                      title: "Title",
+                      body: "Body",
+                    );
+                  },
+                  child: const Text("Send Notification"),
                 ),
                 SizedBox(height: 20),
                 ElevatedButton(
