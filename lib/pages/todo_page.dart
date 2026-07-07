@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_2/pages/util/dialog_box.dart';
 import 'package:flutter_application_2/pages/util/todo_tile.dart';
 
 class TodoPage extends StatefulWidget {
@@ -20,6 +21,15 @@ class _TodoPageState extends State<TodoPage> {
     });
   }
 
+  void createNewNote() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return DialogBox();
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -30,6 +40,11 @@ class _TodoPageState extends State<TodoPage> {
         elevation: 0,
         title: Text("To Do App", style: TextStyle(color: Colors.black)),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: createNewNote,
+        child: Icon(Icons.add),
+      ),
+
       body: Container(
         width: double.infinity,
         height: double.infinity,
