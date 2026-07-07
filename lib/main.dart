@@ -12,12 +12,16 @@ import 'package:flutter_application_2/pages/ball_sort_page.dart';
 import 'package:flutter_application_2/pages/pill_tracker_page.dart';
 import 'package:flutter_application_2/pages/noti_service.dart';
 import 'package:flutter_application_2/pages/todo_page.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   //init notifications
   await NotiService().initNotification();
+
+  await Hive.initFlutter();
+  var box = await Hive.openBox('noteBox');
 
   runApp(MyApp());
 }

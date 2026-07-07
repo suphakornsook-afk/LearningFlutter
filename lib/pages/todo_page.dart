@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_2/data/note_data.dart';
 import 'package:flutter_application_2/pages/util/dialog_box.dart';
 import 'package:flutter_application_2/pages/util/todo_tile.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 class TodoPage extends StatefulWidget {
   const TodoPage({super.key});
@@ -10,26 +12,38 @@ class TodoPage extends StatefulWidget {
 }
 
 class _TodoPageState extends State<TodoPage> {
+  //Using Hive for Local Storage
+  final _noteBox = Hive.box("noteBox");
+
   final _controller = TextEditingController();
 
-  List toDoList = [
-    ["Make Tutorial", false],
-    ["Second Tutorial", true],
-  ];
+  ToDoDataBase db = ToDoDataBase();
+
+  @override
+  void initState() {
+    if (_noteBox.get("TODOLIST") == null) {
+      db.createInitialData();
+    } else {
+      db.loadData();
+    }
+    super.initState();
+  }
 
   void checkBoxChanged(bool? value, int index) {
     setState(() {
-      toDoList[index][1] = !toDoList[index][1];
+      db.toDoList[index][1] = !db.toDoList[index][1];
     });
+    db.updateDataBase();
   }
 
   //save new note
   void saveNewNote() {
     setState(() {
-      toDoList.add([_controller.text, false]);
+      db.toDoList.add([_controller.text, false]);
       _controller.clear();
     });
     Navigator.of(context).pop();
+    db.updateDataBase();
   }
 
   void createNewNote() {
@@ -47,11 +61,11 @@ class _TodoPageState extends State<TodoPage> {
 
   void deleteNote(int index) {
     setState(() {
-      toDoList.removeAt(index);
+      db.toDoList.removeAt(index);
     });
+    db.updateDataBase();
   }
 
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -80,11 +94,11 @@ class _TodoPageState extends State<TodoPage> {
           ),
         ),
         child: ListView.builder(
-          itemCount: toDoList.length,
+          itemCount: db.toDoList.length,
           itemBuilder: (context, index) {
             return TodoTile(
-              noteName: toDoList[index][0],
-              noteDone: toDoList[index][1],
+              noteName: db.toDoList[index][0],
+              noteDone: db.toDoList[index][1],
               onChanged: (value) => checkBoxChanged(value, index),
               deleteFunction: (context) => deleteNote(index),
             );
