@@ -10,6 +10,8 @@ class TodoPage extends StatefulWidget {
 }
 
 class _TodoPageState extends State<TodoPage> {
+  final _controller = TextEditingController();
+
   List toDoList = [
     ["Make Tutorial", false],
     ["Second Tutorial", true],
@@ -21,11 +23,22 @@ class _TodoPageState extends State<TodoPage> {
     });
   }
 
+  //save new note
+  void saveNewNote() {
+    setState(() {
+      toDoList.add([_controller.text, false]);
+    });
+  }
+
   void createNewNote() {
     showDialog(
       context: context,
       builder: (context) {
-        return DialogBox();
+        return DialogBox(
+          controller: _controller,
+          onSave: saveNewNote,
+          onCancel: () => Navigator.of(context).pop(),
+        );
       },
     );
   }
