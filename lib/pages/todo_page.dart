@@ -27,7 +27,9 @@ class _TodoPageState extends State<TodoPage> {
   void saveNewNote() {
     setState(() {
       toDoList.add([_controller.text, false]);
+      _controller.clear();
     });
+    Navigator.of(context).pop();
   }
 
   void createNewNote() {
@@ -41,6 +43,12 @@ class _TodoPageState extends State<TodoPage> {
         );
       },
     );
+  }
+
+  void deleteNote(int index) {
+    setState(() {
+      toDoList.removeAt(index);
+    });
   }
 
   @override
@@ -78,6 +86,7 @@ class _TodoPageState extends State<TodoPage> {
               noteName: toDoList[index][0],
               noteDone: toDoList[index][1],
               onChanged: (value) => checkBoxChanged(value, index),
+              deleteFunction: (context) => deleteNote(index),
             );
           },
         ),
