@@ -1,6 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart'; // เพิ่ม import นี้
 import 'package:shared_preferences/shared_preferences.dart';
+// สมมติว่าไฟล์ NotiService ของคุณชื่อ noti_service.dart อย่าลืมเปลี่ยน path ให้ตรงนะครับ
+import 'package:flutter_application_2/pages/noti_service.dart';
 
 class PillModel {
   final String name;
@@ -14,6 +17,11 @@ class PillModel {
     required this.minute,
     this.isTaken = false,
   });
+
+  // สร้าง ID ที่ไม่ซ้ำกันจากชื่อและเวลา เพื่อใช้ผูกกับระบบ Notification
+  int get uniqueId {
+    return (name.hashCode + hour + minute).abs() % 100000;
+  }
 
   String get formattedTime {
     return "${hour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')}";
@@ -43,10 +51,14 @@ class PillTrackerPage extends StatefulWidget {
 
 class _PillTrackerPageState extends State<PillTrackerPage> {
   List<PillModel> pills = [];
+  // ประกาศตัวแปร NotiService ไว้เรียกใช้งานทั่วทั้งหน้าย่อยนี้
+  final NotiService _notiService = NotiService();
+
+  int selectedHour = 8;
+  int selectedMinute = 0;
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _loadPills();
   }
@@ -61,12 +73,27 @@ class _PillTrackerPageState extends State<PillTrackerPage> {
         pills = decodedList.map((item) => PillModel.fromJson(item)).toList();
       });
     } else {
+      // ตั้งค่าเริ่มต้นของแอป และจองเวลาแจ้งเตือนสำหรับยาสองตัวแรก
+      final defaultPills = [
+        PillModel(name: "Paracetamol", hour: 8, minute: 0),
+        PillModel(name: "Aspirin", hour: 18, minute: 0),
+      ];
+
       setState(() {
-        pills = [
-          PillModel(name: "Paracetamol", hour: 8, minute: 0),
-          PillModel(name: "Aspirin", hour: 18, minute: 0),
-        ];
+        pills = defaultPills;
       });
+      _savePills();
+
+      // สั่งเปิดจองคิวแจ้งเตือนสำหรับชุดเริ่มต้น
+      for (var pill in defaultPills) {
+        await _notiService.scheduleNotification(
+          id: pill.uniqueId,
+          title: "ได้เวลาทานยาแล้ว 💊",
+          body: "อย่าลืมทานยา ${pill.name} ของคุณนะ",
+          hour: pill.hour,
+          minute: pill.minute,
+        );
+      }
     }
   }
 
@@ -82,24 +109,22 @@ class _PillTrackerPageState extends State<PillTrackerPage> {
   final TextEditingController _timeController = TextEditingController();
 
   void _showAddPillSheet() {
-    int selectedHour = 8;
-    int selectedMinute = 0;
+    selectedHour = 8;
+    selectedMinute = 0;
     _nameController.clear();
     _timeController.clear();
 
     showModalBottomSheet(
-      //space
       context: context,
       isScrollControlled: true,
-      shape: RoundedRectangleBorder(
+      shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.only(
-          //space
           topLeft: Radius.circular(24),
           topRight: Radius.circular(24),
         ),
       ),
       builder: (context) => Padding(
-        padding: EdgeInsetsGeometry.only(
+        padding: EdgeInsets.only(
           bottom: MediaQuery.of(context).viewInsets.bottom + 20,
           top: 24,
           left: 24,
@@ -109,14 +134,14 @@ class _PillTrackerPageState extends State<PillTrackerPage> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               "Add More Pill.",
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
             TextField(
               controller: _nameController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: "Pill Name",
                 border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.medication),
@@ -138,11 +163,11 @@ class _PillTrackerPageState extends State<PillTrackerPage> {
                 );
 
                 if (pickedTime != null) {
-                  selectedHour = pickedTime.hour;
-                  selectedMinute = pickedTime.minute;
-                  final String formatted =
-                      "${selectedHour.toString().padLeft(2, '0')}:${selectedMinute.toString().padLeft(2, '0')}";
                   setState(() {
+                    selectedHour = pickedTime.hour;
+                    selectedMinute = pickedTime.minute;
+                    final String formatted =
+                        "${selectedHour.toString().padLeft(2, '0')}:${selectedMinute.toString().padLeft(2, '0')}";
                     _timeController.text = formatted;
                   });
                 }
@@ -153,29 +178,41 @@ class _PillTrackerPageState extends State<PillTrackerPage> {
               width: double.infinity,
               height: 50,
               child: ElevatedButton(
-                //space
-                onPressed: () {
+                onPressed: () async {
                   if (_nameController.text.isEmpty ||
-                      _timeController.text.isEmpty)
+                      _timeController.text.isEmpty) {
                     return;
+                  }
+
+                  final newPill = PillModel(
+                    name: _nameController.text,
+                    hour: selectedHour,
+                    minute: selectedMinute,
+                  );
 
                   setState(() {
-                    pills.add(
-                      PillModel(
-                        name: _nameController.text,
-                        hour: selectedHour,
-                        minute: selectedMinute,
-                      ),
-                    );
+                    pills.add(newPill);
                   });
-                  _savePills();
-                  Navigator.pop(context);
+
+                  // บันทึกลงเครื่อง
+                  await _savePills();
+
+                  // 🔥 จุดเชื่อมที่ 1: สั่งจองคิวแจ้งเตือนทันทีที่เพิ่มยาสำเร็จ
+                  await NotiService().scheduleNotification(
+                    id: newPill.uniqueId,
+                    title: "ได้เวลาทานยาแล้ว 💊",
+                    body: "อย่าลืมทานยา ${newPill.name} ของคุณนะ",
+                    hour: newPill.hour,
+                    minute: newPill.minute,
+                  );
+
+                  if (context.mounted) Navigator.pop(context);
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Color.fromARGB(225, 1, 93, 84),
+                  backgroundColor: const Color.fromARGB(225, 1, 93, 84),
                   foregroundColor: Colors.white,
                 ),
-                child: Text("Save Pill", style: TextStyle(fontSize: 16)),
+                child: const Text("Save Pill", style: TextStyle(fontSize: 16)),
               ),
             ),
           ],
@@ -188,23 +225,23 @@ class _PillTrackerPageState extends State<PillTrackerPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
-
       appBar: AppBar(
-        //transparent appbar
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text("Pill Tracker Page", style: TextStyle(color: Colors.black)),
+        title: const Text(
+          "Pill Tracker Page",
+          style: TextStyle(color: Colors.black),
+        ),
       ),
-
       body: Center(
         child: Container(
           width: double.infinity,
           height: double.infinity,
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                const Color.fromARGB(255, 144, 224, 239),
-                const Color.fromARGB(255, 1, 93, 84),
+                Color.fromARGB(255, 144, 224, 239),
+                Color.fromARGB(255, 1, 93, 84),
               ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
@@ -212,12 +249,12 @@ class _PillTrackerPageState extends State<PillTrackerPage> {
           ),
           child: SafeArea(
             child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 10),
-                  Text(
+                  const Text(
                     "Today's Pills",
                     style: TextStyle(
                       fontSize: 28,
@@ -225,7 +262,7 @@ class _PillTrackerPageState extends State<PillTrackerPage> {
                       color: Colors.white,
                     ),
                   ),
-                  SizedBox(height: 20),
+                  const SizedBox(height: 20),
                   Expanded(
                     child: ListView.builder(
                       itemCount: pills.length,
@@ -233,13 +270,13 @@ class _PillTrackerPageState extends State<PillTrackerPage> {
                         final pill = pills[index];
 
                         return Container(
-                          margin: EdgeInsets.only(bottom: 12),
+                          margin: const EdgeInsets.only(bottom: 12),
                           decoration: BoxDecoration(
                             color: pill.isTaken
                                 ? Colors.white.withOpacity(0.6)
                                 : Colors.white,
                             borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
+                            boxShadow: const [
                               BoxShadow(
                                 color: Colors.black12,
                                 blurRadius: 4,
@@ -248,7 +285,7 @@ class _PillTrackerPageState extends State<PillTrackerPage> {
                             ],
                           ),
                           child: ListTile(
-                            contentPadding: EdgeInsets.symmetric(
+                            contentPadding: const EdgeInsets.symmetric(
                               horizontal: 16,
                               vertical: 8,
                             ),
@@ -294,11 +331,15 @@ class _PillTrackerPageState extends State<PillTrackerPage> {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 IconButton(
-                                  icon: Icon(
+                                  icon: const Icon(
                                     Icons.delete_outline,
                                     color: Colors.redAccent,
                                   ),
-                                  onPressed: () {
+                                  onPressed: () async {
+                                    // 🔥 จุดเชื่อมที่ 2: ลบระบบสั่นเตือนของตัวยานี้ทิ้งก่อน แล้วค่อยลบออกจาก List
+                                    await _notiService.notificationsPlugin
+                                        .cancel(id: pill.uniqueId);
+
                                     setState(() {
                                       pills.removeAt(index);
                                     });
@@ -329,12 +370,27 @@ class _PillTrackerPageState extends State<PillTrackerPage> {
                       },
                     ),
                   ),
-                  Center(
-                    child: ElevatedButton.icon(
-                      onPressed: () => Navigator.pop(context),
-                      icon: Icon(Icons.arrow_back),
-                      label: Text("Go Back"),
-                    ),
+                  Row(
+                    children: [
+                      Center(
+                        child: ElevatedButton.icon(
+                          onPressed: () => Navigator.pop(context),
+                          icon: const Icon(Icons.arrow_back),
+                          label: const Text("Go Back"),
+                        ),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          NotiService().scheduleNotification(
+                            title: "pill tracker",
+                            body: "pill",
+                            hour: 12,
+                            minute: 43,
+                          );
+                        },
+                        child: Text("Schedul noti"),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -342,11 +398,14 @@ class _PillTrackerPageState extends State<PillTrackerPage> {
           ),
         ),
       ),
-
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddPillSheet,
         backgroundColor: Colors.white70,
-        child: Icon(Icons.add, color: Color.fromARGB(255, 1, 93, 84), size: 30),
+        child: const Icon(
+          Icons.add,
+          color: Color.fromARGB(255, 1, 93, 84),
+          size: 30,
+        ),
       ),
     );
   }
