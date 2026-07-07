@@ -11,6 +11,7 @@ import 'package:flutter_application_2/pages/memoryGame_page.dart';
 import 'package:flutter_application_2/pages/ball_sort_page.dart';
 import 'package:flutter_application_2/pages/pill_tracker_page.dart';
 import 'package:flutter_application_2/pages/noti_service.dart';
+import 'package:flutter_application_2/pages/todo_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -41,6 +42,7 @@ class MyApp extends StatelessWidget {
         '/memorygamepage': (context) => MemoryGamePage(),
         '/ballsortpage': (context) => BallSortPage(),
         '/pilltrackerpage': (context) => PillTrackerPage(),
+        '/todopage': (context) => TodoPage(),
       },
     );
   }

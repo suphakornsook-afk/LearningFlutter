@@ -141,6 +141,15 @@ class HomePage extends StatelessWidget {
                         // Navigator.push(context, MaterialPageRoute(builder: (context) => const MockupPage()));
                       },
                     ),
+                    _buildGridCard(
+                      context,
+                      title: "To Do\nApp",
+                      icon: Icons.note,
+                      color: Colors.lightGreen,
+                      onTap: () {
+                        Navigator.pushNamed(context, '/todopage');
+                      },
+                    ),
                   ],
                 ),
               ],

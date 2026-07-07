@@ -4,6 +4,7 @@ import 'package:flutter_application_2/pages/counter_page.dart';
 import 'package:flutter_application_2/pages/home_page.dart';
 import 'package:flutter_application_2/pages/settings_page.dart';
 import 'package:flutter_application_2/pages/ball_sort_page.dart';
+import 'package:flutter_application_2/pages/todo_page.dart';
 
 class FirstPage extends StatefulWidget {
   const FirstPage({super.key});
@@ -126,6 +127,18 @@ class _FirstPageState extends State<FirstPage> {
                 Navigator.pop(context);
                 //go to PillTrackerPage
                 Navigator.pushNamed(context, '/pilltrackerpage');
+              },
+            ),
+
+            //To-do page list tile
+            ListTile(
+              leading: Icon(Icons.note),
+              title: Text("To Do App"),
+              onTap: () {
+                //pop drawer first
+                Navigator.pop(context);
+                //go to PillTrackerPage
+                Navigator.pushNamed(context, '/todopage');
               },
             ),
 

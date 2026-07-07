@@ -54,8 +54,8 @@ class _PillTrackerPageState extends State<PillTrackerPage> {
   // ประกาศตัวแปร NotiService ไว้เรียกใช้งานทั่วทั้งหน้าย่อยนี้
   final NotiService _notiService = NotiService();
 
-  int selectedHour = 8;
-  int selectedMinute = 0;
+  int selectedHour = 1;
+  int selectedMinute = 50;
 
   @override
   void initState() {
@@ -183,6 +183,9 @@ class _PillTrackerPageState extends State<PillTrackerPage> {
                       _timeController.text.isEmpty) {
                     return;
                   }
+                  List<String> timeParts = _timeController.text.split(':');
+                  int finalHour = int.parse(timeParts[0]); // ได้ 11
+                  int finalMinute = int.parse(timeParts[1]); // ได้ 30
 
                   final newPill = PillModel(
                     name: _nameController.text,
@@ -199,11 +202,11 @@ class _PillTrackerPageState extends State<PillTrackerPage> {
 
                   // 🔥 จุดเชื่อมที่ 1: สั่งจองคิวแจ้งเตือนทันทีที่เพิ่มยาสำเร็จ
                   await NotiService().scheduleNotification(
-                    id: newPill.uniqueId,
+                    id: 1,
                     title: "ได้เวลาทานยาแล้ว 💊",
                     body: "อย่าลืมทานยา ${newPill.name} ของคุณนะ",
-                    hour: newPill.hour,
-                    minute: newPill.minute,
+                    hour: finalHour,
+                    minute: finalMinute,
                   );
 
                   if (context.mounted) Navigator.pop(context);
