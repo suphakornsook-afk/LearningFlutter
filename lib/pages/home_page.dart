@@ -5,9 +5,18 @@ import 'package:flutter_application_2/pages/counter_page.dart';
 import 'package:flutter_application_2/pages/home_page.dart';
 import 'package:flutter_application_2/pages/settings_page.dart';
 import 'package:flutter_application_2/pages/ball_sort_page.dart';
+import 'package:flutter_application_2/data/note_data.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+class HomePage extends StatefulWidget {
+  HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  ToDoDataBase db = ToDoDataBase();
 
   @override
   Widget build(BuildContext context) {
@@ -72,7 +81,80 @@ class HomePage extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(height: 25), // เว้นระยะห่างก่อนเริ่ม Grid
+                const SizedBox(height: 16), // เว้นระยะห่างก่อนเริ่ม Grid
+                ValueListenableBuilder(
+                  valueListenable: Hive.box("notebox").listenable(),
+                  builder: (context, Box box, child) {
+                    final List dynamicList = box.get("TODOLIST") ?? [];
+                    final int totalTasks = dynamicList.length;
+
+                    final int completedTasks = dynamicList
+                        .where((todo) => todo[1] == true)
+                        .length;
+
+                    final double progressPercentage = totalTasks > 0
+                        ? (completedTasks / totalTasks)
+                        : 0.0;
+
+                    return Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16.0),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(
+                          0.45,
+                        ), // ขาวโปร่งแสงสไตล์กระจกฝ้าเข้ากับธีมแดงของคุณ
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.5),
+                          width: 1.5,
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                "ความคืบหน้า To Do App 📝",
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                              // แสดงตัวเลขเปอร์เซ็นต์แบบจำนวนเต็ม เช่น 50%
+                              Text(
+                                "${(progressPercentage * 100).toInt()}%",
+                                style: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: LinearProgressIndicator(
+                              value:
+                                  progressPercentage, // เปอร์เซ็นต์ความคืบหน้าที่คำนวณได้
+                              minHeight: 10,
+                              backgroundColor: Colors.white.withOpacity(
+                                0.3,
+                              ), // สีเส้นรางหลัง
+                              valueColor: const AlwaysStoppedAnimation<Color>(
+                                Color.fromARGB(255, 135, 189, 63),
+                              ), // แถบความคืบหน้าสีขาวเด่นๆ บนพื้นแดง
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 16),
                 // ================= ส่วนของ Grid แถวละ 3 ชิ้น =================
                 GridView.count(
                   crossAxisCount: 3,
