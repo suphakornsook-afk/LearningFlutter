@@ -10,6 +10,7 @@ class FoodRandomPage extends StatefulWidget {
 }
 
 class _FoodRandomState extends State<FoodRandomPage> {
+  bool isRandoming = false;
   //ข้อความเริ่มต้น
   String currentMenu = "กดปุ่มด้านล่าง";
   String currentMeat = "เพื่อเริ่มสุ่มเมนู";
@@ -38,11 +39,26 @@ class _FoodRandomState extends State<FoodRandomPage> {
     'รวมมิตร',
   ];
 
-  void randomFood() {
-    final random = Random();
+  void randomFood() async {
+    //ไม่ให้รัวปุ่มเกิน
+    if (isRandoming) return;
+
     setState(() {
-      currentMenu = menus[random.nextInt(menus.length)];
-      currentMeat = meats[random.nextInt(meats.length)];
+      isRandoming = true;
+    });
+
+    final random = Random();
+
+    for (int i = 0; i < 7; i++) {
+      await Future.delayed(Duration(milliseconds: 50 + (i * 30)));
+
+      setState(() {
+        currentMenu = menus[random.nextInt(menus.length)];
+        currentMeat = meats[random.nextInt(meats.length)];
+      });
+    }
+    setState(() {
+      isRandoming = false;
     });
   }
 
@@ -127,7 +143,26 @@ class _FoodRandomState extends State<FoodRandomPage> {
                   width: 200,
                   height: 60,
                   child: ElevatedButton.icon(
-                    onPressed: randomFood,
+                    onPressed: isRandoming
+                        ? null
+                        : randomFood, // ปิดปุ่มชั่วคราวขณะสุ่ม
+                    icon: isRandoming
+                        ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 3,
+                            ),
+                          )
+                        : const Icon(Icons.casino, size: 28),
+                    label: Text(
+                      isRandoming ? 'กำลังสุ่ม...' : 'Random',
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.orangeAccent,
                       foregroundColor: Colors.white,
@@ -135,14 +170,6 @@ class _FoodRandomState extends State<FoodRandomPage> {
                         borderRadius: .circular(30),
                       ),
                       elevation: 4,
-                    ),
-                    icon: Icon(Icons.casino, size: 28),
-                    label: Text(
-                      'Random',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
                     ),
                   ),
                 ),
