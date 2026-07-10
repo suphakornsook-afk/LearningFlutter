@@ -170,6 +170,7 @@ class _HomePageState extends State<HomePage> {
                       icon: Icons.volume_up,
                       color: Colors.orange,
                       onTap: () {
+                        Navigator.pushNamed(context, '/soundboardpage');
                         // Navigator.push(context, MaterialPageRoute(builder: (context) => const SoundboardPage()));
                       },
                     ),
@@ -180,6 +181,7 @@ class _HomePageState extends State<HomePage> {
                       icon: Icons.cookie,
                       color: Colors.amber.shade700,
                       onTap: () {
+                        Navigator.pushNamed(context, '/cookiepage');
                         // Navigator.push(context, MaterialPageRoute(builder: (context) => const FortuneCookiePage()));
                       },
                     ),
@@ -190,6 +192,7 @@ class _HomePageState extends State<HomePage> {
                       icon: Icons.extension,
                       color: Colors.pink,
                       onTap: () {
+                        Navigator.pushNamed(context, '/memorygamepage');
                         // Navigator.push(context, MaterialPageRoute(builder: (context) => const MemoryGamePage()));
                       },
                     ),
@@ -200,6 +203,7 @@ class _HomePageState extends State<HomePage> {
                       icon: Icons.sports_baseball,
                       color: Colors.green,
                       onTap: () {
+                        Navigator.pushNamed(context, '/ballsortpage');
                         // Navigator.push(context, MaterialPageRoute(builder: (context) => const BallSortGamePage()));
                       },
                     ),
@@ -210,6 +214,7 @@ class _HomePageState extends State<HomePage> {
                       icon: Icons.medication,
                       color: Colors.cyan,
                       onTap: () {
+                        Navigator.pushNamed(context, '/pilltrackerpage');
                         // Navigator.push(context, MaterialPageRoute(builder: (context) => const PillTrackerPage()));
                       },
                     ),
@@ -220,6 +225,7 @@ class _HomePageState extends State<HomePage> {
                       icon: Icons.layers,
                       color: Colors.purple,
                       onTap: () {
+                        Navigator.pushNamed(context, '/mockuppage');
                         // Navigator.push(context, MaterialPageRoute(builder: (context) => const MockupPage()));
                       },
                     ),
