@@ -13,6 +13,7 @@ import 'package:flutter_application_2/pages/pill_tracker_page.dart';
 import 'package:flutter_application_2/pages/noti_service.dart';
 import 'package:flutter_application_2/pages/todo_page.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:flutter_application_2/pages/food_random_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -47,6 +48,7 @@ class MyApp extends StatelessWidget {
         '/ballsortpage': (context) => BallSortPage(),
         '/pilltrackerpage': (context) => PillTrackerPage(),
         '/todopage': (context) => TodoPage(),
+        '/foodrandompage': (context) => FoodRandomPage(),
       },
     );
   }

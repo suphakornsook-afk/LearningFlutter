@@ -229,6 +229,7 @@ class _HomePageState extends State<HomePage> {
                         // Navigator.push(context, MaterialPageRoute(builder: (context) => const MockupPage()));
                       },
                     ),
+                    //todo app
                     _buildGridCard(
                       context,
                       title: "To Do\nApp",
@@ -236,6 +237,16 @@ class _HomePageState extends State<HomePage> {
                       color: Colors.lightGreen,
                       onTap: () {
                         Navigator.pushNamed(context, '/todopage');
+                      },
+                    ),
+                    //food randomizer
+                    _buildGridCard(
+                      context,
+                      title: "วันนี้\nกินอะไรดี",
+                      icon: Icons.food_bank,
+                      color: const Color.fromARGB(255, 249, 144, 80),
+                      onTap: () {
+                        Navigator.pushNamed(context, '/foodrandompage');
                       },
                     ),
                   ],
