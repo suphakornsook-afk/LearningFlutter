@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'dart:math';
 
 class FoodRandomPage extends StatefulWidget {
   const FoodRandomPage({super.key});
@@ -12,6 +13,38 @@ class _FoodRandomState extends State<FoodRandomPage> {
   //ข้อความเริ่มต้น
   String currentMenu = "กดปุ่มด้านล่าง";
   String currentMeat = "เพื่อเริ่มสุ่มเมนู";
+
+  // รายการชื่อเมนู
+  final List<String> menus = [
+    'ผัดกะเพรา',
+    'แพนง',
+    'ผัดเปรี้ยวหวาน',
+    'ผัดมาม่า',
+    'สุกี้แห้ง',
+    'สุกี้น้ำ',
+    'ผัดขี้เมา',
+    'ผัดจังโก้',
+    'ลาบ',
+    'ยำ',
+  ];
+
+  // รายการเนื้อสัตว์
+  final List<String> meats = [
+    'ไก่',
+    'หมู',
+    'ปลา',
+    'หมึก',
+    'เนื้อวัว',
+    'รวมมิตร',
+  ];
+
+  void randomFood() {
+    final random = Random();
+    setState(() {
+      currentMenu = menus[random.nextInt(menus.length)];
+      currentMeat = meats[random.nextInt(meats.length)];
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -94,7 +127,7 @@ class _FoodRandomState extends State<FoodRandomPage> {
                   width: 200,
                   height: 60,
                   child: ElevatedButton.icon(
-                    onPressed: () {},
+                    onPressed: randomFood,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.orangeAccent,
                       foregroundColor: Colors.white,
