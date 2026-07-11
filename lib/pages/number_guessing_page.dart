@@ -85,20 +85,6 @@ class _NumberGuessingPageState extends State<NumberGuessingPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  child: Text(
-                    hintMessage,
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: hintColor,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-                const SizedBox(height: 30),
-
-                Container(
                   padding: const EdgeInsets.all(28.0),
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.85),
@@ -113,6 +99,17 @@ class _NumberGuessingPageState extends State<NumberGuessingPage> {
                   ),
                   child: Column(
                     children: [
+                      Text(
+                        hintMessage,
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: hintColor,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+
+                      const SizedBox(height: 30),
                       SizedBox(
                         width: 140,
                         child: TextField(
