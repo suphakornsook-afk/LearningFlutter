@@ -14,6 +14,7 @@ class _NumberGuessingPageState extends State<NumberGuessingPage> {
 
   late int targetNumber;
   String hintMessage = "Try Guess 1 to 100!";
+  Color hintColor = Colors.purple;
 
   @override
   void initState() {
@@ -36,10 +37,13 @@ class _NumberGuessingPageState extends State<NumberGuessingPage> {
     setState(() {
       if (guessedNumber < targetNumber) {
         hintMessage = "Too low! Try Again";
+        hintColor = Colors.blue[900]!;
       } else if (guessedNumber > targetNumber) {
         hintMessage = "Too high! Try Again";
+        hintColor = Colors.amber[900]!;
       } else {
         hintMessage = "Correct!! The Number is $targetNumber 🎉";
+        hintColor = Colors.green[800]!;
       }
     });
   }
@@ -80,44 +84,97 @@ class _NumberGuessingPageState extends State<NumberGuessingPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
-                  hintMessage,
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.purple,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 40),
-
-                SizedBox(height: 40),
-                SizedBox(
-                  width: 150,
-                  child: TextField(
-                    controller: _controller,
-                    keyboardType: TextInputType.number,
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  child: Text(
+                    hintMessage,
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: hintColor,
+                    ),
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-                    decoration: InputDecoration(
-                      hintText: '??',
-                      border: OutlineInputBorder(),
-                    ),
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 30),
 
-                ElevatedButton(
-                  onPressed: checkGuess,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.purple,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 40,
-                      vertical: 16,
-                    ),
+                Container(
+                  padding: const EdgeInsets.all(28.0),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.85),
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.08),
+                        blurRadius: 15,
+                        offset: Offset(0, 8),
+                      ),
+                    ],
                   ),
-                  child: const Text('ส่งคำตอบ', style: TextStyle(fontSize: 18)),
+                  child: Column(
+                    children: [
+                      SizedBox(
+                        width: 140,
+                        child: TextField(
+                          controller: _controller,
+                          keyboardType: TextInputType.number,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 36,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.purple,
+                          ),
+                          decoration: InputDecoration(
+                            hintText: '??',
+                            hintStyle: TextStyle(
+                              color: Colors.purple.withOpacity(0.3),
+                            ),
+                            filled: true,
+                            fillColor: Colors.white,
+                            contentPadding: EdgeInsets.symmetric(vertical: 10),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: BorderSide(
+                                color: Colors.purple,
+                                width: 2,
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: BorderSide(
+                                color: Colors.purpleAccent,
+                                width: 2.5,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 24),
+
+                      SizedBox(
+                        width: double.infinity,
+                        height: 54,
+                        child: ElevatedButton(
+                          onPressed: checkGuess,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.purple,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            elevation: 3,
+                          ),
+                          child: const Text(
+                            'ส่งคำตอบ',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
