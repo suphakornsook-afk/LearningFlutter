@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:math';
 
 class NumberGuessingPage extends StatefulWidget {
   const NumberGuessingPage({super.key});
@@ -8,6 +9,47 @@ class NumberGuessingPage extends StatefulWidget {
 }
 
 class _NumberGuessingPageState extends State<NumberGuessingPage> {
+  final Random _random = Random();
+  final TextEditingController _controller = TextEditingController();
+
+  late int targetNumber;
+  String hintMessage = "Try Guess 1 to 100!";
+
+  @override
+  void initState() {
+    super.initState();
+    targetNumber = _random.nextInt(100) + 1;
+  }
+
+  void checkGuess() {
+    final String input = _controller.text;
+    if (input.isEmpty) return;
+
+    final int? guessedNumber = int.tryParse(input);
+
+    if (guessedNumber == null || guessedNumber < 1 || guessedNumber > 100) {
+      setState(() {
+        hintMessage = "Type only 1 to 100!";
+      });
+      return;
+    }
+    setState(() {
+      if (guessedNumber < targetNumber) {
+        hintMessage = "Too low! Try Again";
+      } else if (guessedNumber > targetNumber) {
+        hintMessage = "Too high! Try Again";
+      } else {
+        hintMessage = "Correct!! The Number is $targetNumber 🎉";
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -38,8 +80,8 @@ class _NumberGuessingPageState extends State<NumberGuessingPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text(
-                  'Try Guessing! 1 to 100',
+                Text(
+                  hintMessage,
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
@@ -53,6 +95,7 @@ class _NumberGuessingPageState extends State<NumberGuessingPage> {
                 SizedBox(
                   width: 150,
                   child: TextField(
+                    controller: _controller,
                     keyboardType: TextInputType.number,
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
@@ -65,7 +108,7 @@ class _NumberGuessingPageState extends State<NumberGuessingPage> {
                 const SizedBox(height: 20),
 
                 ElevatedButton(
-                  onPressed: () {},
+                  onPressed: checkGuess,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.purple,
                     foregroundColor: Colors.white,
