@@ -249,6 +249,16 @@ class _HomePageState extends State<HomePage> {
                         Navigator.pushNamed(context, '/foodrandompage');
                       },
                     ),
+                    //higherlowergame
+                    _buildGridCard(
+                      context,
+                      title: "Number\nGuessing\nGame",
+                      icon: Icons.onetwothree,
+                      color: const Color.fromARGB(255, 229, 80, 249),
+                      onTap: () {
+                        Navigator.pushNamed(context, '/numberguessingpage');
+                      },
+                    ),
                   ],
                 ),
               ],

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'dart:math';
 
 class FoodRandomPage extends StatefulWidget {
@@ -27,6 +26,7 @@ class _FoodRandomState extends State<FoodRandomPage> {
     'ผัดจังโก้',
     'ลาบ',
     'ยำ',
+    'ผัดผงกะหรี่',
   ];
 
   // รายการเนื้อสัตว์
