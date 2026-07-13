@@ -112,14 +112,25 @@ class _NumberGuessingPageState extends State<NumberGuessingPage> {
                   ),
                   child: Column(
                     children: [
-                      Text(
-                        hintMessage,
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: hintColor,
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 300),
+                        transitionBuilder:
+                            (Widget child, Animation<double> animation) {
+                              return FadeTransition(
+                                opacity: animation,
+                                child: child,
+                              );
+                            },
+                        child: Text(
+                          hintMessage,
+                          key: ValueKey<String>(hintMessage),
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: hintColor,
+                          ),
+                          textAlign: TextAlign.center,
                         ),
-                        textAlign: TextAlign.center,
                       ),
 
                       const SizedBox(height: 30),
