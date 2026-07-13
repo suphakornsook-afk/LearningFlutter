@@ -199,25 +199,35 @@ class _NumberGuessingPageState extends State<NumberGuessingPage> {
                         ),
                       ],
                       if (hasWon) ...[
-                        SizedBox(
-                          width: double.infinity,
-                          height: 54,
-                          child: ElevatedButton.icon(
-                            onPressed: startNewGame,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.green[700],
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              elevation: 3,
-                            ),
-                            icon: const Icon(Icons.refresh),
-                            label: const Text(
-                              'Restart!',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
+                        AnimatedScale(
+                          scale: hasWon ? 1.0 : 0.5,
+                          duration: const Duration(milliseconds: 400),
+                          curve: Curves.elasticOut,
+                          child: AnimatedOpacity(
+                            opacity: hasWon ? 1.0 : 0.5,
+                            duration: const Duration(milliseconds: 300),
+
+                            child: SizedBox(
+                              width: double.infinity,
+                              height: 54,
+                              child: ElevatedButton.icon(
+                                onPressed: startNewGame,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.green[700],
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  elevation: 3,
+                                ),
+                                icon: const Icon(Icons.refresh),
+                                label: const Text(
+                                  'Restart!',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                               ),
                             ),
                           ),
