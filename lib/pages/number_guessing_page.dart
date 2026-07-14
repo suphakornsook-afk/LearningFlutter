@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'util/skill_card.dart';
 import 'dart:math';
 
 class NumberGuessingPage extends StatefulWidget {
@@ -20,6 +21,10 @@ class _NumberGuessingPageState extends State<NumberGuessingPage> {
   int minNumber = 1;
   int maxNumber = 100;
 
+  List<SkillCardData> myHandSkills = [];
+  List<SkillCardData> rolledSkills = [];
+  bool isSelectingPerk = false;
+
   @override
   void initState() {
     super.initState();
@@ -34,7 +39,21 @@ class _NumberGuessingPageState extends State<NumberGuessingPage> {
       hintMessage = "Try Guess $minNumber to $maxNumber!";
       hintColor = Colors.purple;
       hasWon = false;
+      isSelectingPerk = false;
       _controller.clear();
+    });
+  }
+
+  void rollThreeSkills() {
+    final allSkills = getAvailableSkills(
+      context,
+      onScanActive: useScanAreaSkill,
+    );
+
+    allSkills.shuffle();
+    setState(() {
+      isSelectingPerk = true;
+      rolledSkills = allSkills.take(3).toList();
     });
   }
 
@@ -43,14 +62,12 @@ class _NumberGuessingPageState extends State<NumberGuessingPage> {
     setState(() {
       int range = maxNumber - minNumber;
       int reduction = (range * 0.1).round();
-
       if (minNumber - reduction < targetNumber) {
         minNumber += reduction;
       }
       if (maxNumber - reduction > targetNumber) {
         maxNumber -= reduction;
       }
-
       hintMessage =
           "Skill Activated: Scaned Area!\nNew Range: $minNumber to $maxNumber";
       hintColor = Colors.deepOrange;
@@ -63,9 +80,12 @@ class _NumberGuessingPageState extends State<NumberGuessingPage> {
 
     final int? guessedNumber = int.tryParse(input);
 
-    if (guessedNumber == null || guessedNumber < 1 || guessedNumber > 100) {
+    if (guessedNumber == null ||
+        guessedNumber < minNumber ||
+        guessedNumber > maxNumber) {
       setState(() {
-        hintMessage = "Type only 1 to 100!";
+        hintMessage = "Type only $minNumber to $maxNumber!";
+        hintColor = Colors.redAccent;
       });
       return;
     }
@@ -82,9 +102,17 @@ class _NumberGuessingPageState extends State<NumberGuessingPage> {
         hintMessage = "Correct!! The Number is $targetNumber 🎉";
         hintColor = Colors.green[800]!;
         hasWon = true;
+        rollThreeSkills();
       }
     });
     _controller.clear();
+  }
+
+  void selectSkill(SkillCardData selected) {
+    setState(() {
+      myHandSkills.add(selected);
+      isSelectingPerk = false;
+    });
   }
 
   @override
@@ -140,13 +168,6 @@ class _NumberGuessingPageState extends State<NumberGuessingPage> {
                     children: [
                       AnimatedSwitcher(
                         duration: const Duration(milliseconds: 300),
-                        transitionBuilder:
-                            (Widget child, Animation<double> animation) {
-                              return FadeTransition(
-                                opacity: animation,
-                                child: child,
-                              );
-                            },
                         child: Text(
                           hintMessage,
                           key: ValueKey<String>(hintMessage),
@@ -160,19 +181,7 @@ class _NumberGuessingPageState extends State<NumberGuessingPage> {
                       ),
 
                       const SizedBox(height: 30),
-                      if (!hasWon) ...[
-                        TextButton.icon(
-                          onPressed: useScanAreaSkill,
-                          icon: const Icon(
-                            Icons.radar,
-                            color: Colors.deepOrange,
-                          ),
-                          label: const Text(
-                            "Use Scan Area Skill (10% Border Cut)",
-                            style: TextStyle(color: Colors.deepOrange),
-                          ),
-                        ),
-                        const SizedBox(height: 10),
+                      if (!hasWon && !isSelectingPerk) ...[
                         SizedBox(
                           width: 140,
                           child: TextField(
@@ -186,32 +195,14 @@ class _NumberGuessingPageState extends State<NumberGuessingPage> {
                             ),
                             decoration: InputDecoration(
                               hintText: '??',
-                              hintStyle: TextStyle(
-                                color: Colors.purple.withOpacity(0.3),
-                              ),
-                              filled: true,
-                              fillColor: Colors.white,
-                              contentPadding: EdgeInsets.symmetric(
-                                vertical: 10,
-                              ),
+
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(16),
-                                borderSide: BorderSide(
-                                  color: Colors.purple,
-                                  width: 2,
-                                ),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
-                                borderSide: BorderSide(
-                                  color: Colors.purpleAccent,
-                                  width: 2.5,
-                                ),
                               ),
                             ),
                           ),
                         ),
-                        SizedBox(height: 24),
+                        const SizedBox(height: 24),
 
                         SizedBox(
                           width: double.infinity,
@@ -224,7 +215,6 @@ class _NumberGuessingPageState extends State<NumberGuessingPage> {
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),
                               ),
-                              elevation: 3,
                             ),
                             child: const Text(
                               'ส่งคำตอบ',
@@ -236,36 +226,56 @@ class _NumberGuessingPageState extends State<NumberGuessingPage> {
                           ),
                         ),
                       ],
-                      if (hasWon) ...[
-                        AnimatedScale(
-                          scale: hasWon ? 1.0 : 0.5,
-                          duration: const Duration(milliseconds: 400),
-                          curve: Curves.elasticOut,
-                          child: AnimatedOpacity(
-                            opacity: hasWon ? 1.0 : 0.5,
-                            duration: const Duration(milliseconds: 300),
-
-                            child: SizedBox(
-                              width: double.infinity,
-                              height: 54,
-                              child: ElevatedButton.icon(
-                                onPressed: startNewGame,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.green[700],
-                                  foregroundColor: Colors.white,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  elevation: 3,
-                                ),
-                                icon: const Icon(Icons.refresh),
-                                label: const Text(
-                                  'Restart!',
-                                  style: TextStyle(
-                                    fontSize: 18,
+                      if (hasWon && isSelectingPerk) ...[
+                        const Text(
+                          "Choose 1 Skill Perk!",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.purple,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Column(
+                          children: rolledSkills.map((skill) {
+                            return Card(
+                              margin: const EdgeInsets.symmetric(vertical: 6),
+                              color: Colors.purple[50],
+                              child: ListTile(
+                                leading: Icon(skill.icon, color: Colors.purple),
+                                title: Text(
+                                  skill.name,
+                                  style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
+                                subtitle: Text(skill.description),
+                                onTap: () => selectSkill(skill),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ],
+
+                      if (hasWon && !isSelectingPerk) ...[
+                        SizedBox(
+                          width: double.infinity,
+                          height: 54,
+                          child: ElevatedButton.icon(
+                            onPressed: startNewGame,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green[700],
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadiusGeometry.circular(16),
+                              ),
+                            ),
+                            icon: const Icon(Icons.arrow_forward),
+                            label: const Text(
+                              'Restart!',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
