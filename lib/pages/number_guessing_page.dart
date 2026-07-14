@@ -17,6 +17,9 @@ class _NumberGuessingPageState extends State<NumberGuessingPage> {
   Color hintColor = Colors.purple;
   bool hasWon = false;
 
+  int minNumber = 1;
+  int maxNumber = 100;
+
   @override
   void initState() {
     super.initState();
@@ -25,11 +28,32 @@ class _NumberGuessingPageState extends State<NumberGuessingPage> {
 
   void startNewGame() {
     setState(() {
-      targetNumber = _random.nextInt(100) + 1;
-      hintMessage = "Try Guess 1 to 100!";
+      minNumber = 1;
+      maxNumber = 100;
+      targetNumber = _random.nextInt(maxNumber) + minNumber;
+      hintMessage = "Try Guess $minNumber to $maxNumber!";
       hintColor = Colors.purple;
       hasWon = false;
       _controller.clear();
+    });
+  }
+
+  void useScanAreaSkill() {
+    if (hasWon) return;
+    setState(() {
+      int range = maxNumber - minNumber;
+      int reduction = (range * 0.1).round();
+
+      if (minNumber - reduction < targetNumber) {
+        minNumber += reduction;
+      }
+      if (maxNumber - reduction > targetNumber) {
+        maxNumber -= reduction;
+      }
+
+      hintMessage =
+          "Skill Activated: Scaned Area!\nNew Range: $minNumber to $maxNumber";
+      hintColor = Colors.deepOrange;
     });
   }
 
@@ -49,9 +73,11 @@ class _NumberGuessingPageState extends State<NumberGuessingPage> {
       if (guessedNumber < targetNumber) {
         hintMessage = "$guessedNumber is Too low! Try Again";
         hintColor = Colors.blue[900]!;
+        if (guessedNumber >= minNumber) minNumber = guessedNumber + 1;
       } else if (guessedNumber > targetNumber) {
         hintMessage = "$guessedNumber is too high! Try Again";
         hintColor = Colors.amber[900]!;
+        if (guessedNumber <= maxNumber) maxNumber = guessedNumber - 1;
       } else {
         hintMessage = "Correct!! The Number is $targetNumber 🎉";
         hintColor = Colors.green[800]!;
@@ -135,6 +161,18 @@ class _NumberGuessingPageState extends State<NumberGuessingPage> {
 
                       const SizedBox(height: 30),
                       if (!hasWon) ...[
+                        TextButton.icon(
+                          onPressed: useScanAreaSkill,
+                          icon: const Icon(
+                            Icons.radar,
+                            color: Colors.deepOrange,
+                          ),
+                          label: const Text(
+                            "Use Scan Area Skill (10% Border Cut)",
+                            style: TextStyle(color: Colors.deepOrange),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
                         SizedBox(
                           width: 140,
                           child: TextField(
