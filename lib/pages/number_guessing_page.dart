@@ -20,6 +20,8 @@ class _NumberGuessingPageState extends State<NumberGuessingPage> {
 
   int minNumber = 1;
   int maxNumber = 100;
+  int currentLevel = 1;
+  int guessCount = 0;
 
   List<SkillCardData> myHandSkills = [];
   List<SkillCardData> rolledSkills = [];
@@ -34,12 +36,14 @@ class _NumberGuessingPageState extends State<NumberGuessingPage> {
   void startNewGame() {
     setState(() {
       minNumber = 1;
-      maxNumber = 100;
+      // maxNumber = 100;
+
       targetNumber = _random.nextInt(maxNumber) + minNumber;
       hintMessage = "Try Guess $minNumber to $maxNumber!";
       hintColor = Colors.purple;
       hasWon = false;
       isSelectingPerk = false;
+      guessCount = 0;
       _controller.clear();
     });
   }
@@ -75,6 +79,10 @@ class _NumberGuessingPageState extends State<NumberGuessingPage> {
   }
 
   void checkGuess() {
+    setState(() {
+      guessCount++;
+    });
+
     final String input = _controller.text;
     if (input.isEmpty) return;
 
@@ -111,6 +119,15 @@ class _NumberGuessingPageState extends State<NumberGuessingPage> {
   void selectSkill(SkillCardData selected) {
     setState(() {
       myHandSkills.add(selected);
+      currentLevel++;
+
+      if (guessCount <= 4) {
+        maxNumber += 150;
+      } else if (guessCount <= 8) {
+        maxNumber += 80;
+      } else {
+        maxNumber += 20;
+      }
       isSelectingPerk = false;
     });
   }
