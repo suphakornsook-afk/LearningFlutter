@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'util/skill_card.dart';
 import 'dart:math';
+import 'util/skill_card.dart';
 
 class NumberGuessingPage extends StatefulWidget {
   const NumberGuessingPage({super.key});
@@ -36,10 +36,10 @@ class _NumberGuessingPageState extends State<NumberGuessingPage> {
   void startNewGame() {
     setState(() {
       minNumber = 1;
-      // maxNumber = 100;
 
       targetNumber = _random.nextInt(maxNumber) + minNumber;
-      hintMessage = "Try Guess $minNumber to $maxNumber!";
+      hintMessage =
+          "Level: $currentLevel | Try Guess $minNumber to $maxNumber!";
       hintColor = Colors.purple;
       hasWon = false;
       isSelectingPerk = false;
@@ -56,8 +56,8 @@ class _NumberGuessingPageState extends State<NumberGuessingPage> {
 
     allSkills.shuffle();
     setState(() {
-      isSelectingPerk = true;
       rolledSkills = allSkills.take(3).toList();
+      isSelectingPerk = true;
     });
   }
 
@@ -66,14 +66,10 @@ class _NumberGuessingPageState extends State<NumberGuessingPage> {
     setState(() {
       int range = maxNumber - minNumber;
       int reduction = (range * 0.1).round();
-      if (minNumber - reduction < targetNumber) {
-        minNumber += reduction;
-      }
-      if (maxNumber - reduction > targetNumber) {
-        maxNumber -= reduction;
-      }
+      if (minNumber + reduction < targetNumber) minNumber += reduction;
+      if (maxNumber - reduction > targetNumber) maxNumber -= reduction;
       hintMessage =
-          "Skill Activated: Scaned Area!\nNew Range: $minNumber to $maxNumber";
+          "Skill Activated: Scanned Area!\nNew Range: $minNumber to $maxNumber";
       hintColor = Colors.deepOrange;
     });
   }
@@ -101,11 +97,9 @@ class _NumberGuessingPageState extends State<NumberGuessingPage> {
       if (guessedNumber < targetNumber) {
         hintMessage = "$guessedNumber is Too low! Try Again";
         hintColor = Colors.blue[900]!;
-        if (guessedNumber >= minNumber) minNumber = guessedNumber + 1;
       } else if (guessedNumber > targetNumber) {
         hintMessage = "$guessedNumber is too high! Try Again";
         hintColor = Colors.amber[900]!;
-        if (guessedNumber <= maxNumber) maxNumber = guessedNumber - 1;
       } else {
         hintMessage = "Correct!! The Number is $targetNumber 🎉";
         hintColor = Colors.green[800]!;
@@ -121,14 +115,22 @@ class _NumberGuessingPageState extends State<NumberGuessingPage> {
       myHandSkills.add(selected);
       currentLevel++;
 
-      if (guessCount <= 4) {
-        maxNumber += 150;
-      } else if (guessCount <= 8) {
-        maxNumber += 80;
-      } else {
-        maxNumber += 20;
-      }
+      const num decayRate = 0.7;
+      num factor = pow(decayRate, guessCount - 1);
+      num bonus = (maxNumber / 2) * factor;
+      maxNumber = maxNumber + bonus.round();
+
       isSelectingPerk = false;
+    });
+  }
+
+  void playCard(int index) {
+    //Activate Card Effect
+    myHandSkills[index].action(this);
+
+    setState(() {
+      //After use card remove it
+      myHandSkills.removeAt(index);
     });
   }
 
@@ -163,146 +165,239 @@ class _NumberGuessingPageState extends State<NumberGuessingPage> {
               end: Alignment.bottomCenter,
             ),
           ),
-          child: Padding(
-            padding: EdgeInsets.all(24.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(28.0),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.85),
-                    borderRadius: BorderRadius.circular(24),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.08),
-                        blurRadius: 15,
-                        offset: Offset(0, 8),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    children: [
-                      AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 300),
-                        child: Text(
-                          hintMessage,
-                          key: ValueKey<String>(hintMessage),
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            color: hintColor,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
 
-                      const SizedBox(height: 30),
-                      if (!hasWon && !isSelectingPerk) ...[
-                        SizedBox(
-                          width: 140,
-                          child: TextField(
-                            controller: _controller,
-                            keyboardType: TextInputType.number,
-                            textAlign: TextAlign.center,
+          child: Stack(
+            children: [
+              Center(
+                child: Padding(
+                  padding: EdgeInsets.all(24.0),
+                  child: Container(
+                    padding: const EdgeInsets.all(28.0),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.85),
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.08),
+                          blurRadius: 15,
+                          offset: Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 300),
+                          child: Text(
+                            hintMessage,
+                            key: ValueKey<String>(hintMessage),
                             style: TextStyle(
-                              fontSize: 36,
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              color: hintColor,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+
+                        const SizedBox(height: 30),
+                        if (!hasWon && !isSelectingPerk) ...[
+                          SizedBox(
+                            width: 140,
+                            child: TextField(
+                              controller: _controller,
+                              keyboardType: TextInputType.number,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 36,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.purple,
+                              ),
+                              decoration: InputDecoration(
+                                hintText: '??',
+
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+
+                          SizedBox(
+                            width: double.infinity,
+                            height: 54,
+                            child: ElevatedButton(
+                              onPressed: checkGuess,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.purple,
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                              ),
+                              child: const Text(
+                                'ส่งคำตอบ',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                        if (hasWon && isSelectingPerk) ...[
+                          const Text(
+                            "Choose 1 Skill Perk!",
+                            style: TextStyle(
+                              fontSize: 18,
                               fontWeight: FontWeight.bold,
                               color: Colors.purple,
                             ),
-                            decoration: InputDecoration(
-                              hintText: '??',
+                          ),
+                          const SizedBox(height: 16),
+                          Column(
+                            children: rolledSkills.map((skill) {
+                              return Card(
+                                margin: const EdgeInsets.symmetric(vertical: 6),
+                                color: Colors.purple[50],
+                                child: ListTile(
+                                  leading: Icon(
+                                    skill.icon,
+                                    color: Colors.purple,
+                                  ),
+                                  title: Text(
+                                    skill.name,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  subtitle: Text(skill.description),
+                                  onTap: () => selectSkill(skill),
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        ],
 
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-
-                        SizedBox(
-                          width: double.infinity,
-                          height: 54,
-                          child: ElevatedButton(
-                            onPressed: checkGuess,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.purple,
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                            ),
-                            child: const Text(
-                              'ส่งคำตอบ',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                      if (hasWon && isSelectingPerk) ...[
-                        const Text(
-                          "Choose 1 Skill Perk!",
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.purple,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        Column(
-                          children: rolledSkills.map((skill) {
-                            return Card(
-                              margin: const EdgeInsets.symmetric(vertical: 6),
-                              color: Colors.purple[50],
-                              child: ListTile(
-                                leading: Icon(skill.icon, color: Colors.purple),
-                                title: Text(
-                                  skill.name,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
+                        if (hasWon && !isSelectingPerk) ...[
+                          SizedBox(
+                            width: double.infinity,
+                            height: 54,
+                            child: ElevatedButton.icon(
+                              onPressed: startNewGame,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green[700],
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadiusGeometry.circular(
+                                    16,
                                   ),
                                 ),
-                                subtitle: Text(skill.description),
-                                onTap: () => selectSkill(skill),
                               ),
-                            );
-                          }).toList(),
-                        ),
-                      ],
-
-                      if (hasWon && !isSelectingPerk) ...[
-                        SizedBox(
-                          width: double.infinity,
-                          height: 54,
-                          child: ElevatedButton.icon(
-                            onPressed: startNewGame,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.green[700],
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadiusGeometry.circular(16),
-                              ),
-                            ),
-                            icon: const Icon(Icons.arrow_forward),
-                            label: const Text(
-                              'Restart!',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
+                              icon: const Icon(Icons.arrow_forward),
+                              label: const Text(
+                                'Restart!',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
                           ),
-                        ),
+                        ],
                       ],
+                    ),
+                  ),
+                ),
+              ),
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 30),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (myHandSkills.isNotEmpty && !hasWon)
+                        const Text(
+                          "Your Hand Cards",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            shadows: [
+                              Shadow(blurRadius: 5, color: Colors.black),
+                            ],
+                          ),
+                        ),
+                      const SizedBox(height: 8),
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: List.generate(myHandSkills.length, (index) {
+                            final skill = myHandSkills[index];
+                            return GestureDetector(
+                              onTap: () => playCard(index),
+                              child: Container(
+                                width: 85,
+                                height: 110,
+                                margin: const EdgeInsets.symmetric(
+                                  horizontal: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: Colors.purple,
+                                    width: 2,
+                                  ),
+                                  boxShadow: const [
+                                    BoxShadow(
+                                      color: Colors.black12,
+                                      blurRadius: 4,
+                                      offset: Offset(0, 3),
+                                    ),
+                                  ],
+                                ),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      skill.icon,
+                                      color: Colors.purple,
+                                      size: 28,
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      skill.name,
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      "Tap to Use",
+                                      style: TextStyle(
+                                        fontSize: 8,
+                                        color: Colors.grey[600],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          }),
+                        ),
+                      ),
                     ],
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
