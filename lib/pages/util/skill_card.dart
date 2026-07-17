@@ -4,7 +4,7 @@ class SkillCardData {
   final String name;
   final String description;
   final IconData icon;
-  final Function(dynamic state) action;
+  final Function(dynamic pageState) action;
 
   SkillCardData({
     required this.name,
@@ -14,31 +14,36 @@ class SkillCardData {
   });
 }
 
-List<SkillCardData> getAvailableSkills(
-  BuildContext context, {
-  required VoidCallback onScanActive,
-}) {
+List<SkillCardData> getAvailableSkills(BuildContext context) {
   return [
     SkillCardData(
       name: "Scan Area",
       description: "Border Cut 10%",
       icon: Icons.radar,
-      action: (_) => onScanActive(),
+      action: (pageState) {
+        pageState.useScanAreaSkill();
+      },
     ),
     SkillCardData(
       name: "Lucky Radar",
       description: "Give odd or even number hint",
       icon: Icons.psychology,
-      action: (_) {
-        //TODO Skill
+      action: (pageState) {
+        final target = pageState.targetNumber;
+        final isEven = target % 2 == 0;
+        pageState.setState(() {
+          pageState.hintMessage =
+              "Radar Reveal:\nThe Secret number is ${isEven ? 'Even (เลขคู่)' : 'Odd (เลขคี่)'}!";
+          pageState.hintColor = Colors.teal[700]!;
+        });
       },
     ),
     SkillCardData(
       name: "Change BGC",
       description: "Try This!!",
-      icon: Icons.radar,
-      action: (_) {
-        //Todo
+      icon: Icons.palette,
+      action: (pageState) {
+        pageState.changeBackgroundColors();
       },
     ),
   ];

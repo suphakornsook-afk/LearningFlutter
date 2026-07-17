@@ -27,6 +27,11 @@ class _NumberGuessingPageState extends State<NumberGuessingPage> {
   List<SkillCardData> rolledSkills = [];
   bool isSelectingPerk = false;
 
+  List<Color> bgColors = [
+    const Color.fromARGB(255, 247, 222, 222),
+    const Color.fromARGB(255, 248, 96, 96),
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -49,10 +54,7 @@ class _NumberGuessingPageState extends State<NumberGuessingPage> {
   }
 
   void rollThreeSkills() {
-    final allSkills = getAvailableSkills(
-      context,
-      onScanActive: useScanAreaSkill,
-    );
+    final allSkills = getAvailableSkills(context);
 
     allSkills.shuffle();
     setState(() {
@@ -71,6 +73,23 @@ class _NumberGuessingPageState extends State<NumberGuessingPage> {
       hintMessage =
           "Skill Activated: Scanned Area!\nNew Range: $minNumber to $maxNumber";
       hintColor = Colors.deepOrange;
+    });
+  }
+
+  void changeBackgroundColors() {
+    // รายการคู่สี Gradient สวย ๆ ไว้สุ่มเปลี่ยน
+    final colorPresets = [
+      [const Color(0xFFE0F7FA), const Color(0xFF00ACC1)], // ฟ้า-น้ำเงิน
+      [const Color(0xFFE8F5E9), const Color(0xFF43A047)], // เขียวเหนี่ยวทรัพย์
+      [const Color(0xFFFFF3E0), const Color(0xFFFB8C00)], // ส้มพาสเทล
+      [const Color(0xFFF3E5F5), const Color(0xFF8E24AA)], // ม่วงลึกลับ
+      [const Color(0xFFECEFF1), const Color(0xFF546E7A)], // เทามินิมอล
+    ];
+    setState(() {
+      // สุ่มเลือกคู่สีใหม่
+      bgColors = colorPresets[_random.nextInt(colorPresets.length)];
+      hintMessage = "Background Changed!";
+      hintColor = Colors.blueGrey[800]!;
     });
   }
 
@@ -157,10 +176,7 @@ class _NumberGuessingPageState extends State<NumberGuessingPage> {
           height: double.infinity,
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [
-                const Color.fromARGB(255, 247, 222, 222),
-                const Color.fromARGB(255, 248, 96, 96),
-              ],
+              colors: bgColors,
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
             ),
