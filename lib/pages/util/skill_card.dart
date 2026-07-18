@@ -59,7 +59,15 @@ List<SkillCardData> getAvailableSkills(BuildContext context) {
       description: "Shield your next blunder doesn't count",
       icon: Icons.shield,
       action: (pageState) {
-        pageState.useShieldSkill(); // เรียกฟังก์ชันเปิดโล่ในหน้าหลัก
+        pageState.useShieldSkill();
+      },
+    ),
+    SkillCardData(
+      name: "Hot & Cold",
+      description: "Giving more hint to this round",
+      icon: Icons.thermostat,
+      action: (pageState) {
+        pageState.useHotAndColdSkill();
       },
     ),
   ];

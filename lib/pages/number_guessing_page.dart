@@ -33,6 +33,7 @@ class _NumberGuessingPageState extends State<NumberGuessingPage> {
   ];
 
   bool isShieldActive = false;
+  bool isHotAndColdActive = false;
 
   @override
   void initState() {
@@ -51,6 +52,7 @@ class _NumberGuessingPageState extends State<NumberGuessingPage> {
       hasWon = false;
       isSelectingPerk = false;
       isShieldActive = false;
+      isHotAndColdActive = false;
       guessCount = 0;
       _controller.clear();
     });
@@ -115,6 +117,15 @@ class _NumberGuessingPageState extends State<NumberGuessingPage> {
     });
   }
 
+  void useHotAndColdSkill() {
+    setState(() {
+      isHotAndColdActive = true;
+      hintMessage =
+          "Hot & Cold Radar Activated!\nYour next guess will reveal the temperature distance!";
+      hintColor = Colors.deepOrangeAccent;
+    });
+  }
+
   void checkGuess() {
     setState(() {
       guessCount++;
@@ -144,6 +155,18 @@ class _NumberGuessingPageState extends State<NumberGuessingPage> {
         } else {
           guessCount++;
         }
+        if (isHotAndColdActive) {
+          isHotAndColdActive = false; // ใช้แล้วหมดไป
+          int distance = (targetNumber - guessedNumber).abs();
+          if (distance <= 5) {
+            hintMessage +=
+                "\n Temperature: 🔥 Burning Hot! (inside a 5 radius)";
+          } else if (distance <= 15) {
+            hintMessage += "\n Temperature: ☀️ Warm (inside a 15 radius)";
+          } else {
+            hintMessage += "\n Temperature: ❄️ Cold (outside a 15 radius)";
+          }
+        }
       } else if (guessedNumber > targetNumber) {
         hintMessage = "$guessedNumber is too high! Try Again";
         hintColor = Colors.amber[900]!;
@@ -152,6 +175,18 @@ class _NumberGuessingPageState extends State<NumberGuessingPage> {
           hintMessage += " (Shield Absorbed!)";
         } else {
           guessCount++;
+        }
+        if (isHotAndColdActive) {
+          isHotAndColdActive = false; // ใช้แล้วหมดไป
+          int distance = (targetNumber - guessedNumber).abs();
+          if (distance <= 5) {
+            hintMessage +=
+                "\n Temperature: 🔥 Burning Hot! (inside a 5 radius)";
+          } else if (distance <= 15) {
+            hintMessage += "\n Temperature: ☀️ Warm (inside a 15 radius)";
+          } else {
+            hintMessage += "\n Temperature: ❄️ Cold (outside a 15 radius)";
+          }
         }
       } else {
         hintMessage = "Correct!! The Number is $targetNumber 🎉";
