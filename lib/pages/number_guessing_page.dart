@@ -93,6 +93,16 @@ class _NumberGuessingPageState extends State<NumberGuessingPage> {
     });
   }
 
+  void useTimeStoneSkill() {
+    setState(() {
+      guessCount = (guessCount - 2).clamp(0, double.infinity).toInt();
+
+      hintMessage =
+          "Time Stone Activated!\nRewinded 2 turns. Current Guesses: $guessCount";
+      hintColor = Colors.cyan[700]!;
+    });
+  }
+
   void checkGuess() {
     setState(() {
       guessCount++;

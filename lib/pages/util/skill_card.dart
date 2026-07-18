@@ -46,5 +46,14 @@ List<SkillCardData> getAvailableSkills(BuildContext context) {
         pageState.changeBackgroundColors();
       },
     ),
+    SkillCardData(
+      name: "Time Stone",
+      description: "ย้อนเวลา ลดจำนวนครั้งที่ทายในด่านนี้ลง 2 ครั้ง",
+      icon: Icons.hourglass_bottom,
+      action: (pageState) {
+        pageState
+            .useTimeStoneSkill(); // เรียกฟังก์ชันที่เราเพิ่งสร้างในหน้าหลัก
+      },
+    ),
   ];
 }
