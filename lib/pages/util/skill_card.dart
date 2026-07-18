@@ -48,11 +48,18 @@ List<SkillCardData> getAvailableSkills(BuildContext context) {
     ),
     SkillCardData(
       name: "Time Stone",
-      description: "ย้อนเวลา ลดจำนวนครั้งที่ทายในด่านนี้ลง 2 ครั้ง",
+      description: "Decrease Number of Guess Counter",
       icon: Icons.hourglass_bottom,
       action: (pageState) {
-        pageState
-            .useTimeStoneSkill(); // เรียกฟังก์ชันที่เราเพิ่งสร้างในหน้าหลัก
+        pageState.useTimeStoneSkill();
+      },
+    ),
+    SkillCardData(
+      name: "The Shield",
+      description: "Shield your next blunder doesn't count",
+      icon: Icons.shield,
+      action: (pageState) {
+        pageState.useShieldSkill(); // เรียกฟังก์ชันเปิดโล่ในหน้าหลัก
       },
     ),
   ];

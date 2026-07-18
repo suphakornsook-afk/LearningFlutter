@@ -32,6 +32,8 @@ class _NumberGuessingPageState extends State<NumberGuessingPage> {
     const Color.fromARGB(255, 248, 96, 96),
   ];
 
+  bool isShieldActive = false;
+
   @override
   void initState() {
     super.initState();
@@ -41,13 +43,14 @@ class _NumberGuessingPageState extends State<NumberGuessingPage> {
   void startNewGame() {
     setState(() {
       minNumber = 1;
-
+      maxNumber = 100;
       targetNumber = _random.nextInt(maxNumber) + minNumber;
       hintMessage =
           "Level: $currentLevel | Try Guess $minNumber to $maxNumber!";
       hintColor = Colors.purple;
       hasWon = false;
       isSelectingPerk = false;
+      isShieldActive = false;
       guessCount = 0;
       _controller.clear();
     });
@@ -103,6 +106,15 @@ class _NumberGuessingPageState extends State<NumberGuessingPage> {
     });
   }
 
+  void useShieldSkill() {
+    setState(() {
+      isShieldActive = true;
+      hintMessage =
+          "The Shield Activated!\nYour next wrong guess will not count!";
+      hintColor = Colors.blue[700]!;
+    });
+  }
+
   void checkGuess() {
     setState(() {
       guessCount++;
@@ -126,9 +138,21 @@ class _NumberGuessingPageState extends State<NumberGuessingPage> {
       if (guessedNumber < targetNumber) {
         hintMessage = "$guessedNumber is Too low! Try Again";
         hintColor = Colors.blue[900]!;
+        if (isShieldActive) {
+          isShieldActive = false;
+          hintMessage += " (Shield Absorbed!)";
+        } else {
+          guessCount++;
+        }
       } else if (guessedNumber > targetNumber) {
         hintMessage = "$guessedNumber is too high! Try Again";
         hintColor = Colors.amber[900]!;
+        if (isShieldActive) {
+          isShieldActive = false;
+          hintMessage += " (Shield Absorbed!)";
+        } else {
+          guessCount++;
+        }
       } else {
         hintMessage = "Correct!! The Number is $targetNumber 🎉";
         hintColor = Colors.green[800]!;
