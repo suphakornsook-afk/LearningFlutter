@@ -1,3 +1,5 @@
+import 'dart:ui_web';
+
 import 'package:flutter/material.dart';
 import 'dart:math';
 import 'util/skill_card.dart';
@@ -22,6 +24,8 @@ class _NumberGuessingPageState extends State<NumberGuessingPage> {
   int maxNumber = 100;
   int currentLevel = 1;
   int guessCount = 0;
+  int playerHP = 100;
+  bool isGameOver = false;
 
   List<SkillCardData> myHandSkills = [];
   List<SkillCardData> rolledSkills = [];
@@ -54,6 +58,7 @@ class _NumberGuessingPageState extends State<NumberGuessingPage> {
       isShieldActive = false;
       isHotAndColdActive = false;
       guessCount = 0;
+      isGameOver = false;
       _controller.clear();
     });
   }
@@ -154,6 +159,7 @@ class _NumberGuessingPageState extends State<NumberGuessingPage> {
           hintMessage += " (Shield Absorbed!)";
         } else {
           guessCount++;
+          playerHP -= 3;
         }
         if (isHotAndColdActive) {
           isHotAndColdActive = false; // ใช้แล้วหมดไป
@@ -175,6 +181,7 @@ class _NumberGuessingPageState extends State<NumberGuessingPage> {
           hintMessage += " (Shield Absorbed!)";
         } else {
           guessCount++;
+          playerHP -= 3;
         }
         if (isHotAndColdActive) {
           isHotAndColdActive = false; // ใช้แล้วหมดไป
@@ -195,6 +202,13 @@ class _NumberGuessingPageState extends State<NumberGuessingPage> {
         rollThreeSkills();
       }
     });
+    if (playerHP <= 0) {
+      playerHP = 0;
+      isGameOver = true;
+      hintMessage =
+          "GAME OVER\nYou ran out of HP! The number was $targetNumber";
+      hintColor = Colors.red[900]!;
+    }
     _controller.clear();
   }
 
@@ -207,7 +221,7 @@ class _NumberGuessingPageState extends State<NumberGuessingPage> {
       num factor = pow(decayRate, guessCount - 1);
       num bonus = (maxNumber / 2) * factor;
       maxNumber = maxNumber + bonus.round();
-
+      playerHP = (playerHP + 20).clamp(0, 100);
       isSelectingPerk = false;
     });
   }
@@ -288,9 +302,21 @@ class _NumberGuessingPageState extends State<NumberGuessingPage> {
 
                         const SizedBox(height: 30),
                         if (!hasWon && !isSelectingPerk) ...[
+                          Text(
+                            "❤️ HP: $playerHP / 100",
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: playerHP <= 30
+                                  ? Colors.red
+                                  : Colors.green[700],
+                            ),
+                          ),
+                          const SizedBox(height: 16),
                           SizedBox(
                             width: 140,
                             child: TextField(
+                              enabled: !isGameOver,
                               controller: _controller,
                               keyboardType: TextInputType.number,
                               textAlign: TextAlign.center,
@@ -314,7 +340,7 @@ class _NumberGuessingPageState extends State<NumberGuessingPage> {
                             width: double.infinity,
                             height: 54,
                             child: ElevatedButton(
-                              onPressed: checkGuess,
+                              onPressed: isGameOver ? null : checkGuess,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.purple,
                                 foregroundColor: Colors.white,
@@ -384,6 +410,40 @@ class _NumberGuessingPageState extends State<NumberGuessingPage> {
                               icon: const Icon(Icons.arrow_forward),
                               label: const Text(
                                 'Restart!',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                        // ถ้า Game Over ให้มีปุ่มกดเริ่มนับ 1 ใหม่
+                        if (isGameOver) ...[
+                          const SizedBox(height: 16),
+                          SizedBox(
+                            width: double.infinity,
+                            height: 54,
+                            child: ElevatedButton.icon(
+                              onPressed: () {
+                                setState(() {
+                                  currentLevel = 1;
+                                  maxNumber = 100;
+                                  playerHP = 100;
+                                });
+
+                                startNewGame();
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red[700],
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                              ),
+                              icon: const Icon(Icons.replay),
+                              label: const Text(
+                                'เริ่มเกมใหม่ทั้งหมด',
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
