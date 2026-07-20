@@ -1,15 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_application_2/pages/counter_page.dart';
-import 'package:flutter_application_2/pages/home_page.dart';
-import 'package:flutter_application_2/pages/settings_page.dart';
-import 'package:flutter_application_2/pages/ball_sort_page.dart';
 import 'package:flutter_application_2/data/note_data.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 class HomePage extends StatefulWidget {
-  HomePage({super.key});
+  const HomePage({super.key});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -27,239 +22,311 @@ class _HomePageState extends State<HomePage> {
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              Color.fromARGB(255, 247, 222, 222),
-              Color.fromARGB(255, 248, 96, 96),
+              Color.fromARGB(255, 252, 238, 238), // ปรับให้สว่างนวลตาขึ้นนิดนึง
+              Color.fromARGB(255, 248, 120, 120), // แดงพาสเทลเดิม
             ],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
         ),
         child: SafeArea(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 20.0,
+              vertical: 20.0,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ================= ส่วนหัวข้อ (แบบ ก: ขาวโปร่งแสง) =================
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16.0),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(
-                      0.35,
-                    ), // ขาวโปร่งแสงสไตล์กระจกฝ้า
-                    borderRadius: BorderRadius.circular(
-                      16,
-                    ), // ขอบมนเข้ากับตัวการ์ด
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        "คลังแอปและมินิเกม 🚀",
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                          shadows: [
-                            Shadow(
-                              color: Colors.black12,
-                              offset: Offset(0, 1),
-                              blurRadius: 2,
-                            ),
-                          ],
+                // ================= 🚀 WELCOME HEADER =================
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "Hello, Developer 👋",
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black54,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        "รวมผลงานโปรเจกต์ทั้งหมดของคุณไว้ในที่เดียว",
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.black.withOpacity(0.9),
+                        const Text(
+                          "คลังแอป & มินิเกม",
+                          style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.black87,
+                            letterSpacing: -0.5,
+                          ),
                         ),
+                      ],
+                    ),
+                    CircleAvatar(
+                      radius: 24,
+                      backgroundColor: Colors.white.withOpacity(0.5),
+                      child: const Icon(
+                        Icons.person_rounded,
+                        color: Colors.black87,
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 16), // เว้นระยะห่างก่อนเริ่ม Grid
+
+                const SizedBox(height: 24),
+
+                // ================= 📝 BIG FEATURE: TO DO TRACKER =================
                 ValueListenableBuilder(
                   valueListenable: Hive.box("notebox").listenable(),
                   builder: (context, Box box, child) {
                     final List dynamicList = box.get("TODOLIST") ?? [];
                     final int totalTasks = dynamicList.length;
-
                     final int completedTasks = dynamicList
                         .where((todo) => todo[1] == true)
                         .length;
-
                     final double progressPercentage = totalTasks > 0
                         ? (completedTasks / totalTasks)
                         : 0.0;
 
-                    return Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(16.0),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(
-                          0.45,
-                        ), // ขาวโปร่งแสงสไตล์กระจกฝ้าเข้ากับธีมแดงของคุณ
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: Colors.white.withOpacity(0.5),
-                          width: 1.5,
-                        ),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text(
-                                "ความคืบหน้า To Do App 📝",
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black87,
-                                ),
-                              ),
-                              // แสดงตัวเลขเปอร์เซ็นต์แบบจำนวนเต็ม เช่น 50%
-                              Text(
-                                "${(progressPercentage * 100).toInt()}%",
-                                style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black87,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 10),
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: LinearProgressIndicator(
-                              value:
-                                  progressPercentage, // เปอร์เซ็นต์ความคืบหน้าที่คำนวณได้
-                              minHeight: 10,
-                              backgroundColor: Colors.white.withOpacity(
-                                0.3,
-                              ), // สีเส้นรางหลัง
-                              valueColor: const AlwaysStoppedAnimation<Color>(
-                                Color.fromARGB(255, 135, 189, 63),
-                              ), // แถบความคืบหน้าสีขาวเด่นๆ บนพื้นแดง
+                    return GestureDetector(
+                      onTap: () => Navigator.pushNamed(context, '/todopage'),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(20.0),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(28),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.06),
+                              blurRadius: 20,
+                              offset: const Offset(0, 10),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(6),
+                                        decoration: BoxDecoration(
+                                          color: Colors.green.shade50,
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                        ),
+                                        child: Icon(
+                                          Icons.note_alt_rounded,
+                                          color: Colors.green.shade700,
+                                          size: 20,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      const Text(
+                                        "To Do Progress",
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black54,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    totalTasks == 0
+                                        ? "ไม่มีงานค้างอยู่เลย!"
+                                        : "เคลียร์ไปแล้ว $completedTasks จาก $totalTasks งาน",
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(10),
+                                    child: LinearProgressIndicator(
+                                      value: progressPercentage,
+                                      minHeight: 6,
+                                      backgroundColor: Colors.grey.shade100,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.green.shade600,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Container(
+                              width: 60,
+                              height: 60,
+                              decoration: BoxDecoration(
+                                color: Colors.green.shade50,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Center(
+                                child: Text(
+                                  "${(progressPercentage * 100).toInt()}%",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w900,
+                                    color: Colors.green.shade700,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     );
                   },
                 ),
-                const SizedBox(height: 16),
-                // ================= ส่วนของ Grid แถวละ 3 ชิ้น =================
+
+                const SizedBox(height: 28),
+
+                // ================= 🎮 SECTION: HOT GAMES (การ์ดเด่นแนวนอน) =================
+                const Text(
+                  "🔥 MINIGAMES",
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.black45,
+                    letterSpacing: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // ใช้ SingleChildScrollView แนวนอนเพื่อให้ดูโมเดิร์น ไม่จำเจเป็น Grid
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      _buildFeaturedCard(
+                        context,
+                        title: "Number Guessing",
+                        subtitle: "เกมทายเลข Roguelike",
+                        icon: Icons.videogame_asset_rounded,
+                        color: Colors.purple,
+                        onTap: () =>
+                            Navigator.pushNamed(context, '/numberguessingpage'),
+                      ),
+                      _buildFeaturedCard(
+                        context,
+                        title: "Memory Game",
+                        subtitle: "จับคู่การ์ดทดสอบสมอง",
+                        icon: Icons.extension_rounded,
+                        color: Colors.pink,
+                        onTap: () =>
+                            Navigator.pushNamed(context, '/memorygamepage'),
+                      ),
+                      _buildFeaturedCard(
+                        context,
+                        title: "Ball Sort Puzzle",
+                        subtitle: "เรียงลูกบอลสีในหลอด",
+                        icon: Icons.sports_baseball_rounded,
+                        color: Colors.green,
+                        onTap: () =>
+                            Navigator.pushNamed(context, '/ballsortpage'),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 28),
+
+                // ================= 🛠️ SECTION: UTILITIES & FUN (Grid แบบ 2 คอลัมน์ สะอาดตา) =================
+                const Text(
+                  "🛠️ UTILITIES & FUN",
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.black45,
+                    letterSpacing: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 12),
+
                 GridView.count(
-                  crossAxisCount: 3,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
+                  crossAxisCount:
+                      2, // 👈 ปรับเป็น 2 คอลัมน์ ตัวหนังสือมีพื้นที่หายใจเยอะขึ้น สวยขึ้นมาก
+                  crossAxisSpacing: 14,
+                  mainAxisSpacing: 14,
                   shrinkWrap: true,
+                  childAspectRatio: 1.4, // สัดส่วนการ์ดผืนผ้าแบบโมเดิร์น
                   physics: const NeverScrollableScrollPhysics(),
                   children: [
-                    // 1. Soundboard
                     _buildGridCard(
                       context,
                       title: "Soundboard",
-                      icon: Icons.volume_up,
-                      color: Colors.orange,
-                      onTap: () {
-                        Navigator.pushNamed(context, '/soundboardpage');
-                        // Navigator.push(context, MaterialPageRoute(builder: (context) => const SoundboardPage()));
-                      },
+                      desc: "กดเปิดเอฟเฟกต์เสียง",
+                      icon: Icons.volume_up_rounded,
+                      color: Colors.orange.shade700,
+                      onTap: () =>
+                          Navigator.pushNamed(context, '/soundboardpage'),
                     ),
-                    // 2. Fortune Cookie
                     _buildGridCard(
                       context,
-                      title: "Fortune\nCookie",
-                      icon: Icons.cookie,
-                      color: Colors.amber.shade700,
-                      onTap: () {
-                        Navigator.pushNamed(context, '/cookiepage');
-                        // Navigator.push(context, MaterialPageRoute(builder: (context) => const FortuneCookiePage()));
-                      },
+                      title: "Fortune Cookie",
+                      desc: "เสี่ยงทายเซียมซี",
+                      icon: Icons.cookie_rounded,
+                      color: Colors.amber.shade800,
+                      onTap: () => Navigator.pushNamed(context, '/cookiepage'),
                     ),
-                    // 3. Memory Game
                     _buildGridCard(
                       context,
-                      title: "Memory\nGame",
-                      icon: Icons.extension,
-                      color: Colors.pink,
-                      onTap: () {
-                        Navigator.pushNamed(context, '/memorygamepage');
-                        // Navigator.push(context, MaterialPageRoute(builder: (context) => const MemoryGamePage()));
-                      },
+                      title: "Pill Tracker",
+                      desc: "บันทึกการกินยาประจำวัน",
+                      icon: Icons.medication_rounded,
+                      color: Colors.cyan.shade700,
+                      onTap: () =>
+                          Navigator.pushNamed(context, '/pilltrackerpage'),
                     ),
-                    // 4. Ball Sort
                     _buildGridCard(
                       context,
-                      title: "Ball Sort\nGame",
-                      icon: Icons.sports_baseball,
-                      color: Colors.green,
-                      onTap: () {
-                        Navigator.pushNamed(context, '/ballsortpage');
-                        // Navigator.push(context, MaterialPageRoute(builder: (context) => const BallSortGamePage()));
-                      },
-                    ),
-                    // 5. Pill Tracker
-                    _buildGridCard(
-                      context,
-                      title: "Pill\nTracker",
-                      icon: Icons.medication,
-                      color: Colors.cyan,
-                      onTap: () {
-                        Navigator.pushNamed(context, '/pilltrackerpage');
-                        // Navigator.push(context, MaterialPageRoute(builder: (context) => const PillTrackerPage()));
-                      },
-                    ),
-                    // 6. Mockup Page
-                    _buildGridCard(
-                      context,
-                      title: "Mockup\nPage",
-                      icon: Icons.layers,
-                      color: Colors.purple,
-                      onTap: () {
-                        Navigator.pushNamed(context, '/mockuppage');
-                        // Navigator.push(context, MaterialPageRoute(builder: (context) => const MockupPage()));
-                      },
-                    ),
-                    //todo app
-                    _buildGridCard(
-                      context,
-                      title: "To Do\nApp",
-                      icon: Icons.note,
-                      color: Colors.lightGreen,
-                      onTap: () {
-                        Navigator.pushNamed(context, '/todopage');
-                      },
-                    ),
-                    //food randomizer
-                    _buildGridCard(
-                      context,
-                      title: "วันนี้\nกินอะไรดี",
-                      icon: Icons.food_bank,
-                      color: const Color.fromARGB(255, 249, 144, 80),
-                      onTap: () {
-                        Navigator.pushNamed(context, '/foodrandompage');
-                      },
-                    ),
-                    //higherlowergame
-                    _buildGridCard(
-                      context,
-                      title: "Number\nGuessing\nGame",
-                      icon: Icons.onetwothree,
-                      color: const Color.fromARGB(255, 229, 80, 249),
-                      onTap: () {
-                        Navigator.pushNamed(context, '/numberguessingpage');
-                      },
+                      title: "วันนี้กินอะไรดี",
+                      desc: "สุ่มเมนูอาหารจานโปรด",
+                      icon: Icons.fastfood_rounded,
+                      color: Colors.deepOrange,
+                      onTap: () =>
+                          Navigator.pushNamed(context, '/foodrandompage'),
                     ),
                   ],
+                ),
+
+                const SizedBox(height: 14),
+
+                // ปุ่มพิเศษเปิด Mockup ด้านล่างสุดแบบเต็มความกว้าง
+                ListTile(
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  tileColor: Colors.white.withOpacity(0.4),
+                  leading: const Icon(
+                    Icons.layers_rounded,
+                    color: Colors.black87,
+                  ),
+                  title: const Text(
+                    "ดูการออกแบบ Mockup Page",
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                  ),
+                  trailing: const Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 16,
+                  ),
+                  onTap: () => Navigator.pushNamed(context, '/mockuppage'),
                 ),
               ],
             ),
@@ -269,53 +336,136 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // ฟังก์ชันสร้างกล่องสี่เหลี่ยมจัตุรัสสำหรับ Grid
-  Widget _buildGridCard(
+  // ✨ 1. ฟังก์ชันสร้างการ์ดเด่นแนวนอน (Featured Card)
+  Widget _buildFeaturedCard(
     BuildContext context, {
     required String title,
+    required String subtitle,
     required IconData icon,
     required Color color,
     required VoidCallback onTap,
   }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        decoration: BoxDecoration(
-          // เปลี่ยนจากสีขาวทึบ เป็นสีขาวโปร่งแสง
-          color: const Color.fromARGB(255, 253, 244, 244),
-          borderRadius: BorderRadius.circular(16),
-          // เพิ่มเส้นขอบบางๆ ให้ดูเหมือนขอบกระจกสะท้อนแสง
-          border: Border.all(color: Colors.white, width: 1.5),
-          // ปรับเงาให้ฟุ้งและจางลงมาก เพื่อความละมุน
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.06),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+    return Container(
+      width: 200,
+      margin: const EdgeInsets.only(right: 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(24),
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(icon, color: color, size: 28),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.black45,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircleAvatar(
-              radius: 22,
-              backgroundColor: color.withOpacity(0.18),
-              child: Icon(icon, color: color, size: 24),
+      ),
+    );
+  }
+
+  // ✨ 2. ฟังก์ชันสร้างกล่องสี่เหลี่ยมผืนผ้าแนวนอน Grid 2 คอลัมน์ (Modern Dashboard)
+  Widget _buildGridCard(
+    BuildContext context, {
+    required String title,
+    required String desc,
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.6), // ขาวละมุนโปร่งแสงพอดีๆ
+        borderRadius: BorderRadius.circular(22),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(22),
+          child: Padding(
+            padding: const EdgeInsets.all(14.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Icon(icon, color: color, size: 24),
+                    Icon(
+                      Icons.arrow_outward_rounded,
+                      color: Colors.black26,
+                      size: 16,
+                    ), // ไอคอนชี้ขึ้นเพิ่มความล้ำ
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  desc,
+                  style: const TextStyle(fontSize: 10, color: Colors.black45),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
             ),
-            const SizedBox(height: 10),
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-                height: 1.2,
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
