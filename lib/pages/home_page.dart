@@ -22,8 +22,8 @@ class _HomePageState extends State<HomePage> {
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              Color.fromARGB(255, 252, 238, 238), // ปรับให้สว่างนวลตาขึ้นนิดนึง
-              Color.fromARGB(255, 248, 120, 120), // แดงพาสเทลเดิม
+              Color.fromARGB(255, 252, 238, 238),
+              Color.fromARGB(255, 248, 120, 120),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -38,7 +38,6 @@ class _HomePageState extends State<HomePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ================= 🚀 WELCOME HEADER =================
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -77,7 +76,6 @@ class _HomePageState extends State<HomePage> {
 
                 const SizedBox(height: 24),
 
-                // ================= 📝 BIG FEATURE: TO DO TRACKER =================
                 ValueListenableBuilder(
                   valueListenable: Hive.box("notebox").listenable(),
                   builder: (context, Box box, child) {
@@ -193,7 +191,6 @@ class _HomePageState extends State<HomePage> {
 
                 const SizedBox(height: 28),
 
-                // ================= 🎮 SECTION: HOT GAMES (การ์ดเด่นแนวนอน) =================
                 const Text(
                   "🔥 MINIGAMES",
                   style: TextStyle(
@@ -205,7 +202,6 @@ class _HomePageState extends State<HomePage> {
                 ),
                 const SizedBox(height: 12),
 
-                // ใช้ SingleChildScrollView แนวนอนเพื่อให้ดูโมเดิร์น ไม่จำเจเป็น Grid
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(
@@ -243,7 +239,6 @@ class _HomePageState extends State<HomePage> {
 
                 const SizedBox(height: 28),
 
-                // ================= 🛠️ SECTION: UTILITIES & FUN (Grid แบบ 2 คอลัมน์ สะอาดตา) =================
                 const Text(
                   "🛠️ UTILITIES & FUN",
                   style: TextStyle(
@@ -256,12 +251,11 @@ class _HomePageState extends State<HomePage> {
                 const SizedBox(height: 12),
 
                 GridView.count(
-                  crossAxisCount:
-                      2, // 👈 ปรับเป็น 2 คอลัมน์ ตัวหนังสือมีพื้นที่หายใจเยอะขึ้น สวยขึ้นมาก
+                  crossAxisCount: 2,
                   crossAxisSpacing: 14,
                   mainAxisSpacing: 14,
                   shrinkWrap: true,
-                  childAspectRatio: 1.4, // สัดส่วนการ์ดผืนผ้าแบบโมเดิร์น
+                  childAspectRatio: 1.4,
                   physics: const NeverScrollableScrollPhysics(),
                   children: [
                     _buildGridCard(
@@ -304,7 +298,6 @@ class _HomePageState extends State<HomePage> {
 
                 const SizedBox(height: 14),
 
-                // ปุ่มพิเศษเปิด Mockup ด้านล่างสุดแบบเต็มความกว้าง
                 ListTile(
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 16,
@@ -336,7 +329,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // ✨ 1. ฟังก์ชันสร้างการ์ดเด่นแนวนอน (Featured Card)
   Widget _buildFeaturedCard(
     BuildContext context, {
     required String title,
@@ -404,7 +396,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // ✨ 2. ฟังก์ชันสร้างกล่องสี่เหลี่ยมผืนผ้าแนวนอน Grid 2 คอลัมน์ (Modern Dashboard)
   Widget _buildGridCard(
     BuildContext context, {
     required String title,
@@ -415,7 +406,7 @@ class _HomePageState extends State<HomePage> {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.6), // ขาวละมุนโปร่งแสงพอดีๆ
+        color: Colors.white.withOpacity(0.6),
         borderRadius: BorderRadius.circular(22),
         boxShadow: [
           BoxShadow(
