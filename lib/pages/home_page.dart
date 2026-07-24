@@ -208,6 +208,15 @@ class _HomePageState extends State<HomePage> {
                     children: [
                       _buildFeaturedCard(
                         context,
+                        title: "Goods Sort",
+                        subtitle: "เกมเรียงของบนชั้นวาง",
+                        icon: Icons.grid_view_rounded,
+                        color: Colors.brown.shade700,
+                        onTap: () =>
+                            Navigator.pushNamed(context, '/goodssortpage'),
+                      ),
+                      _buildFeaturedCard(
+                        context,
                         title: "Number Guessing",
                         subtitle: "เกมทายเลข Roguelike",
                         icon: Icons.videogame_asset_rounded,

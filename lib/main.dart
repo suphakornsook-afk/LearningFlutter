@@ -15,6 +15,7 @@ import 'package:flutter_application_2/pages/todo_page.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter_application_2/pages/food_random_page.dart';
 import 'package:flutter_application_2/pages/number_guessing_page.dart';
+import 'package:flutter_application_2/pages/goods_sort_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -51,6 +52,7 @@ class MyApp extends StatelessWidget {
         '/todopage': (context) => TodoPage(),
         '/foodrandompage': (context) => FoodRandomPage(),
         '/numberguessingpage': (context) => NumberGuessingPage(),
+        '/goodssortpage': (context) => GoodsSortPage(),
       },
     );
   }
