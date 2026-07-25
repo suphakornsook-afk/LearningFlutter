@@ -10,10 +10,8 @@ class GoodsSortPage extends StatefulWidget {
 class _GoodsSortPageState extends State<GoodsSortPage> {
   final List<String> itemTypes = ["🏺", "🪭", "📜", "🪴", "🍵", "🕯️"];
 
-  late List<List<List<String>>> cabinets;
-
-  int? selectedCabinet;
-  int? selectedShelf;
+  // 🎯 เปลี่ยนโครงสร้างชั้นวางให้เป็น List ขนาด 3 ช่องตายตัว (ใส่ String? ได้)
+  late List<List<List<String?>>> cabinets;
 
   @override
   void initState() {
@@ -22,49 +20,44 @@ class _GoodsSortPageState extends State<GoodsSortPage> {
   }
 
   void generateLevelData() {
-    // 1. มีพื้นที่ทั้งหมด 15 ช่อง แต่เราจะใส่ของแค่ 12 ชิ้น (4 ชุด x 3 ชิ้น)
-    // เพื่อให้เหลือช่องว่างว่างเปล่า 3 ช่องไว้ขยับของ!
     int totalItems = 12;
-    int totalSets = totalItems ~/ 3; // ได้ 4 ชุด
+    int totalSets = totalItems ~/ 3;
 
-    List<String> pool = [];
+    List<String?> pool = [];
     for (int i = 0; i < totalSets; i++) {
       String selectedType = itemTypes[i % itemTypes.length];
       pool.addAll([selectedType, selectedType, selectedType]);
     }
 
-    // เติมช่องว่างเปล่า (Empty Space) เข้าไปใน Pool ให้ครบ 15 ช่อง
+    // เติม null ลงใน Pool ให้ครบ 15 ช่อง
     while (pool.length < 15) {
-      pool.add(""); // ใช้ "" แทนช่องว่าง
+      pool.add(null);
     }
 
-    List<List<List<String>>> newCabinets = [];
+    List<List<List<String?>>> newCabinets = [];
     bool hasInitialMatch = true;
 
     while (hasInitialMatch) {
-      pool.shuffle(); // เขย่าสุ่มกระจายของและช่องว่าง
+      pool.shuffle();
       newCabinets = [];
       hasInitialMatch = false;
       int poolIndex = 0;
 
       for (int c = 0; c < 2; c++) {
-        List<List<String>> shelves = [];
+        List<List<String?>> shelves = [];
         for (int s = 0; s < 3; s++) {
           bool isLocked = (s == 2 && c == 1);
 
           if (isLocked) {
-            shelves.add([]);
+            shelves.add([null, null, null]);
           } else {
-            List<String> shelfItems = [];
+            List<String?> shelfItems = [];
             for (int i = 0; i < 3; i++) {
-              String item = pool[poolIndex++];
-              if (item.isNotEmpty) {
-                shelfItems.add(item); // ใส่เฉพาะชิ้นที่มีของลงชั้น
-              }
+              shelfItems.add(pool[poolIndex++]);
             }
 
-            // เช็กไม่ให้ซ้ำ 3 ชิ้นตั้งแต่แรก
-            if (shelfItems.length == 3 &&
+            // เช็กไม่ให้ตรงกัน 3 ชิ้นตั้งแต่แรก
+            if (shelfItems[0] != null &&
                 shelfItems[0] == shelfItems[1] &&
                 shelfItems[1] == shelfItems[2]) {
               hasInitialMatch = true;
@@ -79,6 +72,38 @@ class _GoodsSortPageState extends State<GoodsSortPage> {
 
     setState(() {
       cabinets = newCabinets;
+    });
+  }
+
+  // 🚚 ฟังก์ชันย้ายไอเทมโดยไม่รบกวนตำแหน่งของชิ้นอื่น
+  // 🚚 ฟังก์ชันย้ายไอเทม (รองรับทั้งย้ายข้ามชั้น และย้ายตำแหน่งภายในชั้นเดียวกัน)
+  void moveItem({
+    required int fromCabinet,
+    required int fromShelf,
+    required int fromSlot,
+    required int toCabinet,
+    required int toShelf,
+  }) {
+    // หาช่องว่างแรก (null) ในชั้นปลายทาง
+    int targetSlot = cabinets[toCabinet][toShelf].indexOf(null);
+
+    // 1. ถ้าชั้นปลายทางไม่มีช่องว่างเลย (เต็มหมดแล้ว) -> ย้ายไม่ได้
+    if (targetSlot == -1) return;
+
+    // 2. ถ้าย้ายในชั้นเดียวกัน แล้วดันเป็นสล็อตเดิมเป๊ะๆ -> ไม่ต้องทำอะไร
+    if (fromCabinet == toCabinet &&
+        fromShelf == toShelf &&
+        fromSlot == targetSlot) {
+      return;
+    }
+
+    setState(() {
+      // ดึงของออกจากตำแหน่งเดิม (กลายเป็น null)
+      String? movedItem = cabinets[fromCabinet][fromShelf][fromSlot];
+      cabinets[fromCabinet][fromShelf][fromSlot] = null;
+
+      // นำไปวางลงในช่องว่างของชั้นปลายทาง
+      cabinets[toCabinet][toShelf][targetSlot] = movedItem;
     });
   }
 
@@ -98,12 +123,8 @@ class _GoodsSortPageState extends State<GoodsSortPage> {
         child: SafeArea(
           child: Column(
             children: [
-              // ================= 1. Header (เวลา & คะแนน) =================
               _buildTopBar(context),
-
               const SizedBox(height: 12),
-
-              // ================= 2. Main Area: 2 ตู้กว้างๆ (3 ชั้น) =================
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -116,12 +137,8 @@ class _GoodsSortPageState extends State<GoodsSortPage> {
                   ),
                 ),
               ),
-
               const SizedBox(height: 16),
-
-              // ================= 3. Bottom Action Bar: ย้ายสกิลมาเรียงแนวนอนด้านล่าง =================
               _buildBottomSkillMenu(),
-
               const SizedBox(height: 12),
             ],
           ),
@@ -130,7 +147,6 @@ class _GoodsSortPageState extends State<GoodsSortPage> {
     );
   }
 
-  // 🏆 1. Top Bar กระชับ ไม่กินพื้นที่
   Widget _buildTopBar(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(
@@ -172,16 +188,26 @@ class _GoodsSortPageState extends State<GoodsSortPage> {
               ],
             ),
           ),
-          const SizedBox(width: 40), // Balance
+          const SizedBox(width: 40),
         ],
       ),
     );
   }
 
-  // 🪵 2. ตู้ไม้ 2 ตู้ x 3 ชั้น (ขยายกว้างเต็มตา)
   Widget _buildCabinet({required int cabinetIndex}) {
     return Container(
-      // ... ตกแต่งตู้เดิม ...
+      decoration: BoxDecoration(
+        color: const Color(0xFF3E2723),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFF8D6E63), width: 5),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.5),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
       child: Column(
         children: List.generate(3, (shelfIndex) {
           bool isLocked = (shelfIndex == 2 && cabinetIndex == 1);
@@ -189,7 +215,7 @@ class _GoodsSortPageState extends State<GoodsSortPage> {
 
           return Expanded(
             child: _buildShelf(
-              cabinetIndex: cabinetIndex, // 👈 ส่ง cabinetIndex เข้าไป
+              cabinetIndex: cabinetIndex,
               shelfIndex: shelfIndex,
               isLocked: isLocked,
               lockCount: lockCount,
@@ -200,77 +226,123 @@ class _GoodsSortPageState extends State<GoodsSortPage> {
     );
   }
 
-  // 🪹 3. แผ่นชั้นวางของ (เพิ่มขนาด Emoji ให้ใหญ่สะใจ)
   Widget _buildShelf({
     required int cabinetIndex,
     required int shelfIndex,
     required bool isLocked,
     required int lockCount,
   }) {
-    List<String> items = cabinets[cabinetIndex][shelfIndex];
+    List<String?> items = cabinets[cabinetIndex][shelfIndex];
 
-    return Container(
-      width: double.infinity,
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: Color(0xFF6D4C41), width: 8)),
-      ),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          if (!isLocked)
-            // 🎯 บังคับทำเป็น 3 สล็อตตายตัวเสมอ
-            Row(
-              children: List.generate(3, (slotIndex) {
-                // เช็กว่าช่องนี้มีไอเทมไหม
-                bool hasItem = slotIndex < items.length;
-                String item = hasItem ? items[slotIndex] : "";
+    return DragTarget<Map<String, int>>(
+      // เช็กว่าชั้นปลายทางมีช่องว่าง (null) เหลืออยู่ไหม
+      onWillAcceptWithDetails: (details) {
+        return !isLocked && items.contains(null);
+      },
+      onAcceptWithDetails: (details) {
+        final data = details.data;
+        moveItem(
+          fromCabinet: data['cabinet']!,
+          fromShelf: data['shelf']!,
+          fromSlot: data['slot']!,
+          toCabinet: cabinetIndex,
+          toShelf: shelfIndex,
+        );
+      },
+      builder: (context, candidateData, rejectedData) {
+        bool isHovered = candidateData.isNotEmpty;
 
-                return Expanded(
-                  child: Center(
-                    child: hasItem
-                        ? Text(item, style: const TextStyle(fontSize: 40))
-                        : Container(
-                            // 🔲 ช่องว่าง: ทำเป็นกรอบจางๆ ไว้ให้รู้ว่าวางของได้
-                            width: 45,
-                            height: 45,
-                            decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(0.15),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: Colors.amber.withOpacity(0.2),
-                                width: 1,
+        return Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: isHovered
+                ? Colors.amber.withOpacity(0.15)
+                : Colors.transparent,
+            border: const Border(
+              bottom: BorderSide(color: Color(0xFF6D4C41), width: 8),
+            ),
+          ),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              if (!isLocked)
+                Row(
+                  children: List.generate(3, (slotIndex) {
+                    String? item = items[slotIndex];
+                    bool hasItem = item != null;
+
+                    return Expanded(
+                      child: Center(
+                        child: hasItem
+                            ? Draggable<Map<String, int>>(
+                                data: {
+                                  'cabinet': cabinetIndex,
+                                  'shelf': shelfIndex,
+                                  'slot':
+                                      slotIndex, // 👈 ระบุตำแหน่ง สล็อต 0, 1 หรือ 2
+                                },
+                                feedback: Material(
+                                  color: Colors.transparent,
+                                  child: Text(
+                                    item,
+                                    style: const TextStyle(fontSize: 54),
+                                  ),
+                                ),
+                                childWhenDragging: Opacity(
+                                  opacity: 0.2,
+                                  child: Text(
+                                    item,
+                                    style: const TextStyle(fontSize: 40),
+                                  ),
+                                ),
+                                child: Text(
+                                  item,
+                                  style: const TextStyle(fontSize: 40),
+                                ),
+                              )
+                            : Container(
+                                width: 45,
+                                height: 45,
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withOpacity(0.15),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: Colors.amber.withOpacity(0.2),
+                                    width: 1,
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
-                  ),
-                );
-              }),
-            ),
+                      ),
+                    );
+                  }),
+                ),
 
-          if (isLocked)
-            Container(
-              color: Colors.black.withOpacity(0.5),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.link, color: Colors.amber, size: 32),
-                  const SizedBox(width: 6),
-                  Icon(Icons.lock, color: Colors.amber[300], size: 30),
-                  Text(
-                    " $lockCount",
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 20,
-                    ),
+              if (isLocked)
+                Container(
+                  color: Colors.black.withOpacity(0.5),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.link, color: Colors.amber, size: 32),
+                      const SizedBox(width: 6),
+                      Icon(Icons.lock, color: Colors.amber[300], size: 30),
+                      Text(
+                        " $lockCount",
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      const Icon(Icons.link, color: Colors.amber, size: 32),
+                    ],
                   ),
-                  const SizedBox(width: 6),
-                  const Icon(Icons.link, color: Colors.amber, size: 32),
-                ],
-              ),
-            ),
-        ],
-      ),
+                ),
+            ],
+          ),
+        );
+      },
     );
   }
 
