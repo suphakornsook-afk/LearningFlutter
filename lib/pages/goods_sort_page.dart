@@ -10,8 +10,8 @@ class GoodsSortPage extends StatefulWidget {
 class _GoodsSortPageState extends State<GoodsSortPage> {
   final List<String> itemTypes = ["🏺", "🪭", "📜", "🪴", "🍵", "🕯️"];
 
-  // 🎯 เปลี่ยนโครงสร้างชั้นวางให้เป็น List ขนาด 3 ช่องตายตัว (ใส่ String? ได้)
   late List<List<List<String?>>> cabinets;
+  int score = 0; // 🎯 ตัวแปรเก็บคะแนน
 
   @override
   void initState() {
@@ -29,7 +29,6 @@ class _GoodsSortPageState extends State<GoodsSortPage> {
       pool.addAll([selectedType, selectedType, selectedType]);
     }
 
-    // เติม null ลงใน Pool ให้ครบ 15 ช่อง
     while (pool.length < 15) {
       pool.add(null);
     }
@@ -56,7 +55,6 @@ class _GoodsSortPageState extends State<GoodsSortPage> {
               shelfItems.add(pool[poolIndex++]);
             }
 
-            // เช็กไม่ให้ตรงกัน 3 ชิ้นตั้งแต่แรก
             if (shelfItems[0] != null &&
                 shelfItems[0] == shelfItems[1] &&
                 shelfItems[1] == shelfItems[2]) {
@@ -72,11 +70,11 @@ class _GoodsSortPageState extends State<GoodsSortPage> {
 
     setState(() {
       cabinets = newCabinets;
+      score = 0;
     });
   }
 
-  // 🚚 ฟังก์ชันย้ายไอเทมโดยไม่รบกวนตำแหน่งของชิ้นอื่น
-  // 🚚 ฟังก์ชันย้ายไอเทม (รองรับทั้งย้ายข้ามชั้น และย้ายตำแหน่งภายในชั้นเดียวกัน)
+  // 🚚 ฟังก์ชันย้ายไอเทม
   void moveItem({
     required int fromCabinet,
     required int fromShelf,
@@ -84,13 +82,10 @@ class _GoodsSortPageState extends State<GoodsSortPage> {
     required int toCabinet,
     required int toShelf,
   }) {
-    // หาช่องว่างแรก (null) ในชั้นปลายทาง
     int targetSlot = cabinets[toCabinet][toShelf].indexOf(null);
 
-    // 1. ถ้าชั้นปลายทางไม่มีช่องว่างเลย (เต็มหมดแล้ว) -> ย้ายไม่ได้
     if (targetSlot == -1) return;
 
-    // 2. ถ้าย้ายในชั้นเดียวกัน แล้วดันเป็นสล็อตเดิมเป๊ะๆ -> ไม่ต้องทำอะไร
     if (fromCabinet == toCabinet &&
         fromShelf == toShelf &&
         fromSlot == targetSlot) {
@@ -98,13 +93,40 @@ class _GoodsSortPageState extends State<GoodsSortPage> {
     }
 
     setState(() {
-      // ดึงของออกจากตำแหน่งเดิม (กลายเป็น null)
       String? movedItem = cabinets[fromCabinet][fromShelf][fromSlot];
       cabinets[fromCabinet][fromShelf][fromSlot] = null;
-
-      // นำไปวางลงในช่องว่างของชั้นปลายทาง
       cabinets[toCabinet][toShelf][targetSlot] = movedItem;
+
+      // ✨ ตรวจสอบว่าชั้นปลายทางจับคู่ครบ 3 ชิ้นหรือยัง
+      _checkMatch3(toCabinet, toShelf);
     });
+  }
+
+  // ✨ ฟังก์ชันตรวจจับการ Match 3 และสลายไอเทม
+  void _checkMatch3(int cabinetIndex, int shelfIndex) {
+    List<String?> shelf = cabinets[cabinetIndex][shelfIndex];
+
+    // ต้องมีไอเทมครบทั้ง 3 ช่อง (ไม่มี null) และทั้ง 3 ชิ้นต้องเหมือนกันเป๊ะ
+    if (shelf[0] != null && shelf[0] == shelf[1] && shelf[1] == shelf[2]) {
+      // สลายไอเทมในชั้นนั้นให้เป็น null
+      cabinets[cabinetIndex][shelfIndex] = [null, null, null];
+
+      // บวกคะแนนเพิ่ม 100 คะแนน
+      score += 100;
+
+      // แสดง SnackBar แจ้งเตือนสั้นๆ ให้ผู้เล่นรู้สึกสะใจ
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            "✨ จับคู่สำเร็จ! +100 คะแนน",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          duration: Duration(milliseconds: 800),
+          backgroundColor: Colors.amber,
+        ),
+      );
+    }
   }
 
   @override
@@ -147,6 +169,7 @@ class _GoodsSortPageState extends State<GoodsSortPage> {
     );
   }
 
+  // 🏆 แสดงคะแนนแบบ Dynamic ตามตัวแปร score
   Widget _buildTopBar(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(
@@ -173,13 +196,13 @@ class _GoodsSortPageState extends State<GoodsSortPage> {
               borderRadius: BorderRadius.circular(20),
               border: Border.all(color: const Color(0xFFFFD54F), width: 1.5),
             ),
-            child: const Row(
+            child: Row(
               children: [
-                Icon(Icons.timer_outlined, color: Colors.amber, size: 18),
-                SizedBox(width: 6),
+                const Icon(Icons.timer_outlined, color: Colors.amber, size: 18),
+                const SizedBox(width: 6),
                 Text(
-                  "เวลา: 05:00   |   คะแนน: 0",
-                  style: TextStyle(
+                  "เวลา: 05:00   |   คะแนน: $score", // 👈 ผูกตัวแปร score
+                  style: const TextStyle(
                     color: Colors.amber,
                     fontWeight: FontWeight.bold,
                     fontSize: 15,
@@ -235,7 +258,6 @@ class _GoodsSortPageState extends State<GoodsSortPage> {
     List<String?> items = cabinets[cabinetIndex][shelfIndex];
 
     return DragTarget<Map<String, int>>(
-      // เช็กว่าชั้นปลายทางมีช่องว่าง (null) เหลืออยู่ไหม
       onWillAcceptWithDetails: (details) {
         return !isLocked && items.contains(null);
       },
@@ -278,8 +300,7 @@ class _GoodsSortPageState extends State<GoodsSortPage> {
                                 data: {
                                   'cabinet': cabinetIndex,
                                   'shelf': shelfIndex,
-                                  'slot':
-                                      slotIndex, // 👈 ระบุตำแหน่ง สล็อต 0, 1 หรือ 2
+                                  'slot': slotIndex,
                                 },
                                 feedback: Material(
                                   color: Colors.transparent,
