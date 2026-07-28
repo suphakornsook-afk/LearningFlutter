@@ -22,6 +22,7 @@ class _GoodsSortPageState extends State<GoodsSortPage> {
   void generateLevelData() {
     int totalItems = 12;
     int totalSets = totalItems ~/ 3;
+    int temp = 111;
 
     List<String?> pool = [];
     for (int i = 0; i < totalSets; i++) {
