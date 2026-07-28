@@ -11,7 +11,7 @@ class _GoodsSortPageState extends State<GoodsSortPage> {
   final List<String> itemTypes = ["🏺", "🪭", "📜", "🪴", "🍵", "🕯️"];
 
   late List<List<List<String?>>> cabinets;
-  int score = 0; // 🎯 ตัวแปรเก็บคะแนน
+  int score = 0;
 
   @override
   void initState() {
@@ -74,7 +74,6 @@ class _GoodsSortPageState extends State<GoodsSortPage> {
     });
   }
 
-  // 🚚 ฟังก์ชันย้ายไอเทม
   void moveItem({
     required int fromCabinet,
     required int fromShelf,
@@ -97,24 +96,18 @@ class _GoodsSortPageState extends State<GoodsSortPage> {
       cabinets[fromCabinet][fromShelf][fromSlot] = null;
       cabinets[toCabinet][toShelf][targetSlot] = movedItem;
 
-      // ✨ ตรวจสอบว่าชั้นปลายทางจับคู่ครบ 3 ชิ้นหรือยัง
       _checkMatch3(toCabinet, toShelf);
     });
   }
 
-  // ✨ ฟังก์ชันตรวจจับการ Match 3 และสลายไอเทม
   void _checkMatch3(int cabinetIndex, int shelfIndex) {
     List<String?> shelf = cabinets[cabinetIndex][shelfIndex];
 
-    // ต้องมีไอเทมครบทั้ง 3 ช่อง (ไม่มี null) และทั้ง 3 ชิ้นต้องเหมือนกันเป๊ะ
     if (shelf[0] != null && shelf[0] == shelf[1] && shelf[1] == shelf[2]) {
-      // สลายไอเทมในชั้นนั้นให้เป็น null
       cabinets[cabinetIndex][shelfIndex] = [null, null, null];
 
-      // บวกคะแนนเพิ่ม 100 คะแนน
       score += 100;
 
-      // แสดง SnackBar แจ้งเตือนสั้นๆ ให้ผู้เล่นรู้สึกสะใจ
       ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -169,7 +162,6 @@ class _GoodsSortPageState extends State<GoodsSortPage> {
     );
   }
 
-  // 🏆 แสดงคะแนนแบบ Dynamic ตามตัวแปร score
   Widget _buildTopBar(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(
@@ -201,7 +193,7 @@ class _GoodsSortPageState extends State<GoodsSortPage> {
                 const Icon(Icons.timer_outlined, color: Colors.amber, size: 18),
                 const SizedBox(width: 6),
                 Text(
-                  "เวลา: 05:00   |   คะแนน: $score", // 👈 ผูกตัวแปร score
+                  "เวลา: 05:00   |   คะแนน: $score",
                   style: const TextStyle(
                     color: Colors.amber,
                     fontWeight: FontWeight.bold,
