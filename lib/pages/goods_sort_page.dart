@@ -11,6 +11,7 @@ class _GoodsSortPageState extends State<GoodsSortPage> {
   final List<String> itemTypes = ["🏺", "🪭", "📜", "🪴", "🍵", "🕯️"];
 
   late List<List<List<String?>>> cabinets;
+  List<String> reservePool = []; // 📦 คลังสำรองหลังตู้
   int score = 0;
 
   @override
@@ -20,28 +21,38 @@ class _GoodsSortPageState extends State<GoodsSortPage> {
   }
 
   void generateLevelData() {
-    int totalItems = 12;
-    int totalSets = totalItems ~/ 3;
-    int temp = 111;
+    // 1. สร้างของทั้งหมด 12 ชุด (36 ชิ้น)
+    int totalSets = 12;
 
-    List<String?> pool = [];
+    List<String> pool = [];
     for (int i = 0; i < totalSets; i++) {
       String selectedType = itemTypes[i % itemTypes.length];
       pool.addAll([selectedType, selectedType, selectedType]);
     }
 
-    while (pool.length < 15) {
-      pool.add(null);
+    pool.shuffle(); // เขย่าของ
+
+    // 2. ดึงแค่ 12 ชิ้นแรกมาวางหน้าตู้ + เติม null อีก 3 ช่องให้ครบ 15 ช่อง (เพื่อให้มีช่องว่าง 3 ช่องเสมอ!)
+    List<String?> frontItems = [];
+    for (int i = 0; i < 12; i++) {
+      frontItems.add(pool[i]);
     }
+    for (int i = 0; i < 3; i++) {
+      frontItems.add(null); // 🔲 ช่องว่าง 3 ช่อง
+    }
+    frontItems.shuffle(); // สุ่มกระจายช่องว่างให้ปะปนบนชั้นวาง
+
+    // 3. ของที่เหลืออีก 24 ชิ้น เก็บไว้เป็นคลังหลังตู้เพื่อรอเติมตอน Match-3
+    reservePool = pool.sublist(12);
 
     List<List<List<String?>>> newCabinets = [];
     bool hasInitialMatch = true;
 
     while (hasInitialMatch) {
-      pool.shuffle();
+      frontItems.shuffle();
       newCabinets = [];
       hasInitialMatch = false;
-      int poolIndex = 0;
+      int itemIndex = 0;
 
       for (int c = 0; c < 2; c++) {
         List<List<String?>> shelves = [];
@@ -53,9 +64,10 @@ class _GoodsSortPageState extends State<GoodsSortPage> {
           } else {
             List<String?> shelfItems = [];
             for (int i = 0; i < 3; i++) {
-              shelfItems.add(pool[poolIndex++]);
+              shelfItems.add(frontItems[itemIndex++]);
             }
 
+            // เช็กไม่ให้ตรงกัน 3 ชิ้นตั้งแต่แรก
             if (shelfItems[0] != null &&
                 shelfItems[0] == shelfItems[1] &&
                 shelfItems[1] == shelfItems[2]) {
@@ -75,6 +87,7 @@ class _GoodsSortPageState extends State<GoodsSortPage> {
     });
   }
 
+  // 🚚 ฟังก์ชันย้ายไอเทม (ย้ายไปช่องว่างเฉยๆ ไม่เติมของ)
   void moveItem({
     required int fromCabinet,
     required int fromShelf,
@@ -82,8 +95,10 @@ class _GoodsSortPageState extends State<GoodsSortPage> {
     required int toCabinet,
     required int toShelf,
   }) {
+    // หาช่องว่างแรก (null) ในชั้นปลายทาง
     int targetSlot = cabinets[toCabinet][toShelf].indexOf(null);
 
+    // ถ้าชั้นปลายทางไม่มีช่องว่างเลย ย้ายไม่ได้
     if (targetSlot == -1) return;
 
     if (fromCabinet == toCabinet &&
@@ -93,30 +108,46 @@ class _GoodsSortPageState extends State<GoodsSortPage> {
     }
 
     setState(() {
+      // 1. ดึงของออกจากช่องเดิม -> ช่องเดิมกลายเป็น null (กลายเป็นช่องว่างใหม่)
       String? movedItem = cabinets[fromCabinet][fromShelf][fromSlot];
       cabinets[fromCabinet][fromShelf][fromSlot] = null;
+
+      // 2. นำไปวางในช่องว่างของชั้นใหม่
       cabinets[toCabinet][toShelf][targetSlot] = movedItem;
 
+      // 3. เช็กเฉพาะการ Match-3
       _checkMatch3(toCabinet, toShelf);
     });
   }
 
+  // ✨ ฟังก์ชัน Match-3: สลายแล้ว "เติมของใหม่เฉพาะตอนที่ Match-3 สำเร็จ"
   void _checkMatch3(int cabinetIndex, int shelfIndex) {
     List<String?> shelf = cabinets[cabinetIndex][shelfIndex];
 
     if (shelf[0] != null && shelf[0] == shelf[1] && shelf[1] == shelf[2]) {
-      cabinets[cabinetIndex][shelfIndex] = [null, null, null];
-
       score += 100;
+
+      // ถ้าในคลังหลังตู้ยังมีของเหลือ -> ดึงของใหม่ 3 ชิ้นมาเติมลงชั้นนี้
+      // ถ้าคลังหมด -> ให้กลายเป็นชั้นว่างเปล่า [null, null, null]
+      List<String?> newShelfItems = [];
+      for (int i = 0; i < 3; i++) {
+        if (reservePool.isNotEmpty) {
+          newShelfItems.add(reservePool.removeAt(0));
+        } else {
+          newShelfItems.add(null);
+        }
+      }
+
+      cabinets[cabinetIndex][shelfIndex] = newShelfItems;
 
       ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text(
-            "✨ จับคู่สำเร็จ! +100 คะแนน",
-            style: TextStyle(fontWeight: FontWeight.bold),
+            "✨ จับคู่สำเร็จ! +100 คะแนน (ของในคลังเหลือ: ${reservePool.length})",
+            style: const TextStyle(fontWeight: FontWeight.bold),
           ),
-          duration: Duration(milliseconds: 800),
+          duration: const Duration(milliseconds: 900),
           backgroundColor: Colors.amber,
         ),
       );
