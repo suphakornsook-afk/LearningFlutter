@@ -7,12 +7,19 @@ class GoodsSortPage extends StatefulWidget {
   State<GoodsSortPage> createState() => _GoodsSortPageState();
 }
 
-class _GoodsSortPageState extends State<GoodsSortPage> {
+class _GoodsSortPageState extends State<GoodsSortPage>
+    with TickerProviderStateMixin {
   final List<String> itemTypes = ["🏺", "🪭", "📜", "🪴", "🍵", "🕯️"];
 
   late List<List<List<String?>>> cabinets;
-  List<String> reservePool = []; // 📦 คลังสำรองหลังตู้
+
+  // 🌟 เก็บข้อมูล Opacity ของแต่ละชั้นไว้ควบคุม Fade Animation (1.0 = ชัดปกติ, 0.2 = จาง)
+  late List<List<double>> shelfOpacities;
+
+  List<String> reservePool = [];
   int score = 0;
+
+  List<_EffectParticle> particles = [];
 
   @override
   void initState() {
@@ -21,7 +28,6 @@ class _GoodsSortPageState extends State<GoodsSortPage> {
   }
 
   void generateLevelData() {
-    // 1. สร้างของทั้งหมด 12 ชุด (36 ชิ้น)
     int totalSets = 12;
 
     List<String> pool = [];
@@ -30,19 +36,17 @@ class _GoodsSortPageState extends State<GoodsSortPage> {
       pool.addAll([selectedType, selectedType, selectedType]);
     }
 
-    pool.shuffle(); // เขย่าของ
+    pool.shuffle();
 
-    // 2. ดึงแค่ 12 ชิ้นแรกมาวางหน้าตู้ + เติม null อีก 3 ช่องให้ครบ 15 ช่อง (เพื่อให้มีช่องว่าง 3 ช่องเสมอ!)
     List<String?> frontItems = [];
     for (int i = 0; i < 12; i++) {
       frontItems.add(pool[i]);
     }
     for (int i = 0; i < 3; i++) {
-      frontItems.add(null); // 🔲 ช่องว่าง 3 ช่อง
+      frontItems.add(null);
     }
-    frontItems.shuffle(); // สุ่มกระจายช่องว่างให้ปะปนบนชั้นวาง
+    frontItems.shuffle();
 
-    // 3. ของที่เหลืออีก 24 ชิ้น เก็บไว้เป็นคลังหลังตู้เพื่อรอเติมตอน Match-3
     reservePool = pool.sublist(12);
 
     List<List<List<String?>>> newCabinets = [];
@@ -67,7 +71,6 @@ class _GoodsSortPageState extends State<GoodsSortPage> {
               shelfItems.add(frontItems[itemIndex++]);
             }
 
-            // เช็กไม่ให้ตรงกัน 3 ชิ้นตั้งแต่แรก
             if (shelfItems[0] != null &&
                 shelfItems[0] == shelfItems[1] &&
                 shelfItems[1] == shelfItems[2]) {
@@ -83,22 +86,41 @@ class _GoodsSortPageState extends State<GoodsSortPage> {
 
     setState(() {
       cabinets = newCabinets;
+      // 🌟 กำหนด Opacity เริ่มต้นให้ทุกชั้นเป็น 1.0 (ชัดปกติ)
+      shelfOpacities = [
+        [1.0, 1.0, 1.0],
+        [1.0, 1.0, 1.0],
+      ];
       score = 0;
     });
   }
 
-  // 🚚 ฟังก์ชันย้ายไอเทม (ย้ายไปช่องว่างเฉยๆ ไม่เติมของ)
+  // ✨ ฟังก์ชันสำหรับเล่นอนิเมชัน Fade-in เมื่อมีของใหม่ถูกเติมลงชั้น
+  void _triggerFadeInAnimation(int cabinetIndex, int shelfIndex) {
+    setState(() {
+      shelfOpacities[cabinetIndex][shelfIndex] = 0.2; // ทำให้จางก่อน
+    });
+
+    // ค่อยๆ ปรับให้กลับมาชัดปกติ (Fade-in)
+    Future.delayed(const Duration(milliseconds: 50), () {
+      if (mounted) {
+        setState(() {
+          shelfOpacities[cabinetIndex][shelfIndex] = 1.0;
+        });
+      }
+    });
+  }
+
   void moveItem({
     required int fromCabinet,
     required int fromShelf,
     required int fromSlot,
     required int toCabinet,
     required int toShelf,
+    required GlobalKey shelfKey,
   }) {
-    // หาช่องว่างแรก (null) ในชั้นปลายทาง
     int targetSlot = cabinets[toCabinet][toShelf].indexOf(null);
 
-    // ถ้าชั้นปลายทางไม่มีช่องว่างเลย ย้ายไม่ได้
     if (targetSlot == -1) return;
 
     if (fromCabinet == toCabinet &&
@@ -108,31 +130,49 @@ class _GoodsSortPageState extends State<GoodsSortPage> {
     }
 
     setState(() {
-      // 1. ดึงของออกจากช่องเดิม -> ช่องเดิมกลายเป็น null (กลายเป็นช่องว่างใหม่)
       String? movedItem = cabinets[fromCabinet][fromShelf][fromSlot];
       cabinets[fromCabinet][fromShelf][fromSlot] = null;
-
-      // 2. นำไปวางในช่องว่างของชั้นใหม่
       cabinets[toCabinet][toShelf][targetSlot] = movedItem;
 
-      // 3. เช็กเฉพาะการ Match-3
-      _checkMatch3(toCabinet, toShelf);
+      // 🎯 1. เช็กชั้นต้นทาง: ถ้าว่างเปล่าทั้ง 3 ช่อง ให้เติมของใหม่ + เล่น Fade-In
+      List<String?> fromShelfItems = cabinets[fromCabinet][fromShelf];
+      bool isFromShelfEmpty = fromShelfItems.every((item) => item == null);
+
+      if (isFromShelfEmpty && reservePool.isNotEmpty) {
+        List<String?> refilledItems = [];
+        for (int i = 0; i < 3; i++) {
+          if (reservePool.isNotEmpty) {
+            refilledItems.add(reservePool.removeAt(0));
+          } else {
+            refilledItems.add(null);
+          }
+        }
+        cabinets[fromCabinet][fromShelf] = refilledItems;
+
+        // 🎬 เล่นอนิเมชัน Fade-in ของใหม่
+        _triggerFadeInAnimation(fromCabinet, fromShelf);
+      }
+
+      // 🎯 2. ตรวจจับการ Match-3 ของชั้นปลายทาง
+      _checkMatch3(toCabinet, toShelf, shelfKey);
     });
   }
 
-  // ✨ ฟังก์ชัน Match-3: สลายแล้ว "เติมของใหม่เฉพาะตอนที่ Match-3 สำเร็จ"
-  void _checkMatch3(int cabinetIndex, int shelfIndex) {
+  void _checkMatch3(int cabinetIndex, int shelfIndex, GlobalKey shelfKey) {
     List<String?> shelf = cabinets[cabinetIndex][shelfIndex];
 
     if (shelf[0] != null && shelf[0] == shelf[1] && shelf[1] == shelf[2]) {
       score += 100;
 
-      // ถ้าในคลังหลังตู้ยังมีของเหลือ -> ดึงของใหม่ 3 ชิ้นมาเติมลงชั้นนี้
-      // ถ้าคลังหมด -> ให้กลายเป็นชั้นว่างเปล่า [null, null, null]
+      _triggerSparklesEffect(shelfKey);
+
       List<String?> newShelfItems = [];
+      bool hasRefilled = false;
+
       for (int i = 0; i < 3; i++) {
         if (reservePool.isNotEmpty) {
           newShelfItems.add(reservePool.removeAt(0));
+          hasRefilled = true;
         } else {
           newShelfItems.add(null);
         }
@@ -140,56 +180,97 @@ class _GoodsSortPageState extends State<GoodsSortPage> {
 
       cabinets[cabinetIndex][shelfIndex] = newShelfItems;
 
-      ScaffoldMessenger.of(context).clearSnackBars();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            "✨ จับคู่สำเร็จ! +100 คะแนน (ของในคลังเหลือ: ${reservePool.length})",
-            style: const TextStyle(fontWeight: FontWeight.bold),
+      // 🎬 ถ้ามีการเติมของใหม่หลังจาก Match-3 ให้เล่น Fade-in ด้วย
+      if (hasRefilled) {
+        _triggerFadeInAnimation(cabinetIndex, shelfIndex);
+      }
+    }
+  }
+
+  void _triggerSparklesEffect(GlobalKey shelfKey) {
+    final RenderBox? renderBox =
+        shelfKey.currentContext?.findRenderObject() as RenderBox?;
+    if (renderBox == null) return;
+
+    final position = renderBox.localToGlobal(Offset.zero);
+    final size = renderBox.size;
+    final center = Offset(
+      position.dx + size.width / 2,
+      position.dy + size.height / 2,
+    );
+
+    setState(() {
+      for (int i = 0; i < 10; i++) {
+        particles.add(
+          _EffectParticle(
+            x: center.dx + (i % 2 == 0 ? i * 8 : -i * 8),
+            y: center.dy,
+            text: i % 2 == 0 ? "✨" : "⭐",
+            fontSize: 24,
           ),
-          duration: const Duration(milliseconds: 900),
-          backgroundColor: Colors.amber,
+        );
+      }
+      particles.add(
+        _EffectParticle(
+          x: center.dx - 30,
+          y: center.dy - 10,
+          text: "+100",
+          fontSize: 28,
+          isScoreText: true,
         ),
       );
-    }
+    });
+
+    Future.delayed(const Duration(milliseconds: 1000), () {
+      if (mounted) {
+        setState(() {
+          particles.removeWhere((p) => p.isFinished);
+        });
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF2C1810), Color(0xFF100805)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              _buildTopBar(context),
-              const SizedBox(height: 12),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Row(
-                    children: [
-                      Expanded(child: _buildCabinet(cabinetIndex: 0)),
-                      const SizedBox(width: 16),
-                      Expanded(child: _buildCabinet(cabinetIndex: 1)),
-                    ],
-                  ),
-                ),
+      body: Stack(
+        children: [
+          Container(
+            width: double.infinity,
+            height: double.infinity,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFF2C1810), Color(0xFF100805)],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
               ),
-              const SizedBox(height: 16),
-              _buildBottomSkillMenu(),
-              const SizedBox(height: 12),
-            ],
+            ),
+            child: SafeArea(
+              child: Column(
+                children: [
+                  _buildTopBar(context),
+                  const SizedBox(height: 12),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: Row(
+                        children: [
+                          Expanded(child: _buildCabinet(cabinetIndex: 0)),
+                          const SizedBox(width: 16),
+                          Expanded(child: _buildCabinet(cabinetIndex: 1)),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildBottomSkillMenu(),
+                  const SizedBox(height: 12),
+                ],
+              ),
+            ),
           ),
-        ),
+          ...particles.map((p) => _AnimatedSparkle(particle: p)),
+        ],
       ),
     );
   }
@@ -280,8 +361,10 @@ class _GoodsSortPageState extends State<GoodsSortPage> {
     required int lockCount,
   }) {
     List<String?> items = cabinets[cabinetIndex][shelfIndex];
+    GlobalKey shelfKey = GlobalKey();
 
-    return DragTarget<Map<String, int>>(
+    return DragTarget<Map<String, dynamic>>(
+      key: shelfKey,
       onWillAcceptWithDetails: (details) {
         return !isLocked && items.contains(null);
       },
@@ -293,6 +376,7 @@ class _GoodsSortPageState extends State<GoodsSortPage> {
           fromSlot: data['slot']!,
           toCabinet: cabinetIndex,
           toShelf: shelfIndex,
+          shelfKey: shelfKey,
         );
       },
       builder: (context, candidateData, rejectedData) {
@@ -312,54 +396,60 @@ class _GoodsSortPageState extends State<GoodsSortPage> {
             alignment: Alignment.center,
             children: [
               if (!isLocked)
-                Row(
-                  children: List.generate(3, (slotIndex) {
-                    String? item = items[slotIndex];
-                    bool hasItem = item != null;
+                // 🌟 หุ้มไอเทมด้วย AnimatedOpacity เพื่อสร้างเอฟเฟกต์ Fade-In นุ่มๆ
+                AnimatedOpacity(
+                  duration: const Duration(milliseconds: 450),
+                  curve: Curves.easeInQuad,
+                  opacity: shelfOpacities[cabinetIndex][shelfIndex],
+                  child: Row(
+                    children: List.generate(3, (slotIndex) {
+                      String? item = items[slotIndex];
+                      bool hasItem = item != null;
 
-                    return Expanded(
-                      child: Center(
-                        child: hasItem
-                            ? Draggable<Map<String, int>>(
-                                data: {
-                                  'cabinet': cabinetIndex,
-                                  'shelf': shelfIndex,
-                                  'slot': slotIndex,
-                                },
-                                feedback: Material(
-                                  color: Colors.transparent,
-                                  child: Text(
-                                    item,
-                                    style: const TextStyle(fontSize: 54),
+                      return Expanded(
+                        child: Center(
+                          child: hasItem
+                              ? Draggable<Map<String, dynamic>>(
+                                  data: {
+                                    'cabinet': cabinetIndex,
+                                    'shelf': shelfIndex,
+                                    'slot': slotIndex,
+                                  },
+                                  feedback: Material(
+                                    color: Colors.transparent,
+                                    child: Text(
+                                      item,
+                                      style: const TextStyle(fontSize: 54),
+                                    ),
                                   ),
-                                ),
-                                childWhenDragging: Opacity(
-                                  opacity: 0.2,
+                                  childWhenDragging: Opacity(
+                                    opacity: 0.2,
+                                    child: Text(
+                                      item,
+                                      style: const TextStyle(fontSize: 40),
+                                    ),
+                                  ),
                                   child: Text(
                                     item,
                                     style: const TextStyle(fontSize: 40),
                                   ),
-                                ),
-                                child: Text(
-                                  item,
-                                  style: const TextStyle(fontSize: 40),
-                                ),
-                              )
-                            : Container(
-                                width: 45,
-                                height: 45,
-                                decoration: BoxDecoration(
-                                  color: Colors.black.withOpacity(0.15),
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(
-                                    color: Colors.amber.withOpacity(0.2),
-                                    width: 1,
+                                )
+                              : Container(
+                                  width: 45,
+                                  height: 45,
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withOpacity(0.15),
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(
+                                      color: Colors.amber.withOpacity(0.2),
+                                      width: 1,
+                                    ),
                                   ),
                                 ),
-                              ),
-                      ),
-                    );
-                  }),
+                        ),
+                      );
+                    }),
+                  ),
                 ),
 
               if (isLocked)
@@ -474,6 +564,112 @@ class _GoodsSortPageState extends State<GoodsSortPage> {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _EffectParticle {
+  final double x;
+  final double y;
+  final String text;
+  final double fontSize;
+  final bool isScoreText;
+  bool isFinished = false;
+
+  _EffectParticle({
+    required this.x,
+    required this.y,
+    required this.text,
+    required this.fontSize,
+    this.isScoreText = false,
+  });
+}
+
+class _AnimatedSparkle extends StatefulWidget {
+  final _EffectParticle particle;
+
+  const _AnimatedSparkle({required this.particle});
+
+  @override
+  State<_AnimatedSparkle> createState() => _AnimatedSparkleState();
+}
+
+class _AnimatedSparkleState extends State<_AnimatedSparkle>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _offsetY;
+  late Animation<double> _opacity;
+  late Animation<double> _scale;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+
+    _offsetY = Tween<double>(
+      begin: 0,
+      end: -60,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
+
+    _opacity = Tween<double>(begin: 1.0, end: 0.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.4, 1.0, curve: Curves.easeIn),
+      ),
+    );
+
+    _scale = Tween<double>(
+      begin: 0.5,
+      end: 1.3,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.elasticOut));
+
+    _controller.forward().then((_) {
+      widget.particle.isFinished = true;
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        return Positioned(
+          left: widget.particle.x,
+          top: widget.particle.y + _offsetY.value,
+          child: Opacity(
+            opacity: _opacity.value,
+            child: Transform.scale(
+              scale: _scale.value,
+              child: widget.particle.isScoreText
+                  ? Text(
+                      widget.particle.text,
+                      style: const TextStyle(
+                        color: Color(0xFFFFD54F),
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
+                        shadows: [
+                          Shadow(color: Colors.black, blurRadius: 8),
+                          Shadow(color: Colors.amber, blurRadius: 16),
+                        ],
+                      ),
+                    )
+                  : Text(
+                      widget.particle.text,
+                      style: TextStyle(fontSize: widget.particle.fontSize),
+                    ),
+            ),
+          ),
+        );
+      },
     );
   }
 }
