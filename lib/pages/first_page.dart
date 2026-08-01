@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_2/pages/counter_page.dart';
 import 'package:flutter_application_2/pages/home_page.dart';
 import 'package:flutter_application_2/pages/settings_page.dart';
-import 'package:flutter_application_2/pages/ball_sort_page.dart';
-import 'package:flutter_application_2/pages/todo_page.dart';
 
 class FirstPage extends StatefulWidget {
   const FirstPage({super.key});

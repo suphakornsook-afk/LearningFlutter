@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:math';
 
 class GoodsSortPage extends StatefulWidget {
   const GoodsSortPage({super.key});
@@ -18,6 +19,7 @@ class _GoodsSortPageState extends State<GoodsSortPage>
 
   List<String> reservePool = [];
   int score = 0;
+  int shuffleSkillCount = 3;
 
   List<_EffectParticle> particles = [];
 
@@ -92,6 +94,114 @@ class _GoodsSortPageState extends State<GoodsSortPage>
         [1.0, 1.0, 1.0],
       ];
       score = 0;
+    });
+  }
+
+  void useShuffleSkill() {
+    if (shuffleSkillCount <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("สิทธิ์การใช้สกิลหมดแล้ว!"),
+          duration: Duration(milliseconds: 800),
+        ),
+      );
+      return;
+    }
+
+    // 1. ดึงไอเทมจริงทั้งหมดบนตู้ขณะนั้น
+    List<String> realItems = [];
+    for (int c = 0; c < 2; c++) {
+      for (int s = 0; s < 3; s++) {
+        bool isLocked = (s == 2 && c == 1);
+        if (!isLocked) {
+          for (var item in cabinets[c][s]) {
+            if (item != null) {
+              realItems.add(item);
+            }
+          }
+        }
+      }
+    }
+
+    // 🎲 2. สุ่มจำนวนช่องว่างใหม่ทุกครั้งที่กด! (สุ่มได้ระหว่าง 2, 3, 4, หรือ 5 ช่อง)
+    final random = Random();
+    int randomEmptySlots = random.nextInt(4) + 2; // สุ่มได้ 2-5 ช่อง
+    int targetItemsCount = 15 - randomEmptySlots; // จำนวนไอเทมที่ต้องมีบนตู้
+
+    // 3. ปรับจำนวนไอเทมจริงให้เท่ากับความต้องการของตู้ใหม่
+    // ถ้าไอเทมเดิมบนตู้น้อยไป -> ดึงของจากหลังตู้ (reservePool) มาเติม
+    while (realItems.length < targetItemsCount && reservePool.isNotEmpty) {
+      realItems.add(reservePool.removeAt(0));
+    }
+    // ถ้าไอเทมเดิมบนตู้มากเกินไป -> ย้ายส่วนเกินเก็บเข้าหลังตู้ (reservePool)
+    while (realItems.length > targetItemsCount) {
+      reservePool.insert(0, realItems.removeLast());
+    }
+
+    // คำนวณช่องว่างจริงรอบสุดท้าย (เผื่อกรณีคลังหลังตู้หมด)
+    int finalEmptySlots = 15 - realItems.length;
+
+    // 4. รวมไอเทม + ช่องว่าง null ลงใน List เดียวกัน
+    List<String?> finalBoardSlots = [];
+    for (var item in realItems) {
+      finalBoardSlots.add(item);
+    }
+    for (int i = 0; i < finalEmptySlots; i++) {
+      finalBoardSlots.add(null);
+    }
+
+    // 5. เขย่าและกระจายสล็อตลงตู้
+    List<List<List<String?>>> bestCabinets = [];
+    for (int attempt = 0; attempt < 50; attempt++) {
+      finalBoardSlots.shuffle();
+
+      List<List<List<String?>>> tempCabinets = [];
+      int slotIndex = 0;
+      bool hasInitialMatch = false;
+
+      for (int c = 0; c < 2; c++) {
+        List<List<String?>> shelves = [];
+        for (int s = 0; s < 3; s++) {
+          bool isLocked = (s == 2 && c == 1);
+          if (isLocked) {
+            shelves.add([null, null, null]);
+          } else {
+            List<String?> shelfItems = [
+              finalBoardSlots[slotIndex++],
+              finalBoardSlots[slotIndex++],
+              finalBoardSlots[slotIndex++],
+            ];
+
+            if (shelfItems[0] != null &&
+                shelfItems[0] == shelfItems[1] &&
+                shelfItems[1] == shelfItems[2]) {
+              hasInitialMatch = true;
+            }
+
+            shelves.add(shelfItems);
+          }
+        }
+        tempCabinets.add(shelves);
+      }
+
+      bestCabinets = tempCabinets;
+      if (!hasInitialMatch) break;
+    }
+
+    // 6. อัปเดตตู้ + เล่น Fade-in Animation
+    setState(() {
+      cabinets = bestCabinets;
+
+      for (int c = 0; c < 2; c++) {
+        for (int s = 0; s < 3; s++) {
+          bool isLocked = (s == 2 && c == 1);
+          if (!isLocked) {
+            _triggerFadeInAnimation(c, s);
+          }
+        }
+      }
+
+      shuffleSkillCount--;
     });
   }
 
@@ -297,7 +407,7 @@ class _GoodsSortPageState extends State<GoodsSortPage>
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
             decoration: BoxDecoration(
-              color: const Color(0xFF4E342E).withOpacity(0.9),
+              color: const Color(0xFF4E342E).withValues(alpha: 0.9),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(color: const Color(0xFFFFD54F), width: 1.5),
             ),
@@ -330,7 +440,7 @@ class _GoodsSortPageState extends State<GoodsSortPage>
         border: Border.all(color: const Color(0xFF8D6E63), width: 5),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.5),
+            color: Colors.black.withValues(alpha: 0.5),
             blurRadius: 12,
             offset: const Offset(0, 6),
           ),
@@ -386,7 +496,7 @@ class _GoodsSortPageState extends State<GoodsSortPage>
           width: double.infinity,
           decoration: BoxDecoration(
             color: isHovered
-                ? Colors.amber.withOpacity(0.15)
+                ? Colors.amber.withValues(alpha: 0.15)
                 : Colors.transparent,
             border: const Border(
               bottom: BorderSide(color: Color(0xFF6D4C41), width: 8),
@@ -438,10 +548,12 @@ class _GoodsSortPageState extends State<GoodsSortPage>
                                   width: 45,
                                   height: 45,
                                   decoration: BoxDecoration(
-                                    color: Colors.black.withOpacity(0.15),
+                                    color: Colors.black.withValues(alpha: 0.15),
                                     borderRadius: BorderRadius.circular(8),
                                     border: Border.all(
-                                      color: Colors.amber.withOpacity(0.2),
+                                      color: Colors.amber.withValues(
+                                        alpha: 0.2,
+                                      ),
                                       width: 1,
                                     ),
                                   ),
@@ -454,7 +566,7 @@ class _GoodsSortPageState extends State<GoodsSortPage>
 
               if (isLocked)
                 Container(
-                  color: Colors.black.withOpacity(0.5),
+                  color: Colors.black.withValues(alpha: 0.5),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -486,7 +598,7 @@ class _GoodsSortPageState extends State<GoodsSortPage>
       margin: const EdgeInsets.symmetric(horizontal: 24),
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
       decoration: BoxDecoration(
-        color: const Color(0xFF4E342E).withOpacity(0.85),
+        color: const Color(0xFF4E342E).withValues(alpha: 0.85),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: const Color(0xFF8D6E63), width: 1.5),
       ),
@@ -497,16 +609,22 @@ class _GoodsSortPageState extends State<GoodsSortPage>
             icon: Icons.card_giftcard,
             label: "กำจัดห่อใหญ่",
             count: 3,
+            onTap: () {},
           ),
+
+          // 👈 ปุ่มสุ่มเปลี่ยน กดใช้งานได้จริงแล้ว
           _buildBottomSkillButton(
             icon: Icons.published_with_changes,
             label: "สุ่มเปลี่ยน",
-            count: 3,
+            count: shuffleSkillCount,
+            onTap: useShuffleSkill,
           ),
+
           _buildBottomSkillButton(
             icon: Icons.autorenew_rounded,
             label: "รีเฟรชการวาง",
             count: 3,
+            onTap: () {},
           ),
         ],
       ),
@@ -517,53 +635,66 @@ class _GoodsSortPageState extends State<GoodsSortPage>
     required IconData icon,
     required String label,
     required int count,
+    required VoidCallback onTap,
   }) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Stack(
-          clipBehavior: Clip.none,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: const Color(0xFF8D6E63),
-                shape: BoxShape.circle,
-                border: Border.all(color: const Color(0xFFFFD54F), width: 2),
-                boxShadow: const [
-                  BoxShadow(color: Colors.black38, blurRadius: 4),
-                ],
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: count > 0 ? const Color(0xFF8D6E63) : Colors.grey[700],
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: count > 0 ? const Color(0xFFFFD54F) : Colors.grey,
+                    width: 2,
+                  ),
+                  boxShadow: const [
+                    BoxShadow(color: Colors.black38, blurRadius: 4),
+                  ],
+                ),
+                child: Icon(
+                  icon,
+                  color: count > 0 ? const Color(0xFFFFECB3) : Colors.grey[400],
+                  size: 24,
+                ),
               ),
-              child: Icon(icon, color: const Color(0xFFFFECB3), size: 24),
-            ),
-            Positioned(
-              right: -2,
-              top: -2,
-              child: CircleAvatar(
-                radius: 9,
-                backgroundColor: Colors.red[800],
-                child: Text(
-                  "$count",
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
+              Positioned(
+                right: -2,
+                top: -2,
+                child: CircleAvatar(
+                  radius: 9,
+                  backgroundColor: count > 0
+                      ? Colors.red[800]
+                      : Colors.grey[800],
+                  child: Text(
+                    "$count",
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: const TextStyle(
-            color: Color(0xFFFFECB3),
-            fontSize: 11,
-            fontWeight: FontWeight.w600,
+            ],
           ),
-        ),
-      ],
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(
+              color: count > 0 ? const Color(0xFFFFECB3) : Colors.grey[500],
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

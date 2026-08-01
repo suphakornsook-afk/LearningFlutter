@@ -276,7 +276,7 @@ class _PillTrackerPageState extends State<PillTrackerPage> {
                           margin: const EdgeInsets.only(bottom: 12),
                           decoration: BoxDecoration(
                             color: pill.isTaken
-                                ? Colors.white.withOpacity(0.6)
+                                ? Colors.white.withValues(alpha: 0.6)
                                 : Colors.white,
                             borderRadius: BorderRadius.circular(16),
                             boxShadow: const [
