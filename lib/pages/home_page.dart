@@ -269,6 +269,14 @@ class _HomePageState extends State<HomePage> {
                   children: [
                     _buildGridCard(
                       context,
+                      title: "Mashup Do Frontend things here",
+                      desc: "ลองฝึกทำ frontend หลายๆแบบครับ",
+                      icon: Icons.palette_outlined,
+                      color: const Color.fromARGB(255, 158, 70, 235),
+                      onTap: () => Navigator.pushNamed(context, '/mashuppage'),
+                    ),
+                    _buildGridCard(
+                      context,
                       title: "Soundboard",
                       desc: "กดเปิดเอฟเฟกต์เสียง",
                       icon: Icons.volume_up_rounded,
