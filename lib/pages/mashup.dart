@@ -55,7 +55,7 @@ class _MashupPageState extends State<MashupPage> {
                                     onTap: () {
                                       Navigator.pushNamed(
                                         context,
-                                        '/mockuppage',
+                                        '/stackfepage',
                                       );
                                     },
                                     child: Container(
@@ -88,7 +88,7 @@ class _MashupPageState extends State<MashupPage> {
                                                   CrossAxisAlignment.start,
                                               children: [
                                                 Text(
-                                                  "Mashup Frontend",
+                                                  "Stack Frontend Practice",
                                                   style:
                                                       GoogleFonts.bigShoulders(
                                                         fontSize: 16,
@@ -100,7 +100,7 @@ class _MashupPageState extends State<MashupPage> {
                                                 ),
                                                 SizedBox(height: 10),
                                                 Text(
-                                                  "This is a sample description for the Mashup Frontend page. You can add more details here.",
+                                                  "This is a sample description for the Stack Frontend Practice page. You can add more details here.",
                                                   style: TextStyle(
                                                     fontSize: 12,
                                                     color: Colors.black54,
