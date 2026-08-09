@@ -55,6 +55,73 @@ class _MashupPageState extends State<MashupPage> {
                                     onTap: () {
                                       Navigator.pushNamed(
                                         context,
+                                        '/progresspage',
+                                      );
+                                    },
+                                    child: Container(
+                                      width: double.infinity,
+                                      padding: EdgeInsets.all(20),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withOpacity(0.8),
+                                        borderRadius: BorderRadius.circular(15),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withOpacity(
+                                              0.2,
+                                            ),
+                                            blurRadius: 10,
+                                            offset: Offset(0, 5),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Icon(
+                                            Icons.code,
+                                            size: 50,
+                                            color: Colors.deepPurple,
+                                          ),
+                                          SizedBox(width: 20),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  "Progress Page",
+                                                  style:
+                                                      GoogleFonts.bigShoulders(
+                                                        fontSize: 16,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: Colors.black87,
+                                                        letterSpacing: 1.5,
+                                                      ),
+                                                ),
+                                                SizedBox(height: 10),
+                                                Text(
+                                                  "IDK what to do today, so i just make a page, Pending for now, but i will make it useful in the future.",
+                                                  style: TextStyle(
+                                                    fontSize: 12,
+                                                    color: Colors.black54,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(height: 20),
+                                Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    borderRadius: BorderRadius.circular(16),
+                                    onTap: () {
+                                      Navigator.pushNamed(
+                                        context,
                                         '/stackfepage',
                                       );
                                     },

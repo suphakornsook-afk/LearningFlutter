@@ -18,6 +18,7 @@ import 'package:flutter_application_2/pages/number_guessing_page.dart';
 import 'package:flutter_application_2/pages/goods_sort_page.dart';
 import 'package:flutter_application_2/pages/mashup.dart';
 import 'package:flutter_application_2/pages/stack_fe_page.dart';
+import 'package:flutter_application_2/pages/progress_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -57,6 +58,7 @@ class MyApp extends StatelessWidget {
         '/goodssortpage': (context) => GoodsSortPage(),
         '/mashuppage': (context) => MashupPage(),
         '/stackfepage': (context) => StackFePage(),
+        '/progresspage': (context) => ProgressPage(),
       },
     );
   }
