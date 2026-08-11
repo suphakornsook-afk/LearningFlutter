@@ -8,6 +8,7 @@ class ProgressPage extends StatefulWidget {
 }
 
 class _ProgressPageState extends State<ProgressPage> {
+  double progress = 0.0;
   double percent = 30;
 
   @override
@@ -52,14 +53,14 @@ class _ProgressPageState extends State<ProgressPage> {
               SizedBox(height: 20),
               CustomPaint(
                 size: Size(200, 100),
-                // painter: _ProgressPageState(progress: percent),
+                painter: _SemiCirclePainter(progress: percent),
                 child: SizedBox(
                   width: 200,
                   height: 100,
                   child: Align(
                     alignment: Alignment.bottomCenter,
                     child: Text(
-                      "cannot apply semi-circle today, cause need package, so I will apply it tomorrow",
+                      "${(percent).toInt()}%",
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
@@ -73,5 +74,50 @@ class _ProgressPageState extends State<ProgressPage> {
         ),
       ),
     );
+  }
+}
+
+class _SemiCirclePainter extends CustomPainter {
+  final double progress;
+  _SemiCirclePainter({required this.progress});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height);
+    final radius = size.width / 2;
+    const strokeWidth = 14.0;
+
+    final backgroundPaint = Paint()
+      ..color = Colors.grey.shade200
+      ..strokeWidth = strokeWidth
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: radius - strokeWidth / 2),
+      3.14,
+      3.14,
+      false,
+      backgroundPaint,
+    );
+
+    final progressPaint = Paint()
+      ..color = const Color(0xFF52C273)
+      ..strokeWidth = strokeWidth
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: radius - strokeWidth / 2),
+      3.14,
+      3.14 * (progress / 100),
+      false,
+      progressPaint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _SemiCirclePainter oldDelegate) {
+    return oldDelegate.progress != progress;
   }
 }
