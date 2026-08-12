@@ -277,6 +277,15 @@ class _HomePageState extends State<HomePage> {
                     ),
                     _buildGridCard(
                       context,
+                      title: "Flashcard Vocab",
+                      desc: "เอาไว้เล่นท่องศัพท์ภาษาอังกฤษ",
+                      icon: Icons.card_giftcard_rounded,
+                      color: const Color.fromARGB(255, 208, 184, 2),
+                      onTap: () =>
+                          Navigator.pushNamed(context, '/vocabflashcardpage'),
+                    ),
+                    _buildGridCard(
+                      context,
                       title: "Soundboard",
                       desc: "กดเปิดเอฟเฟกต์เสียง",
                       icon: Icons.volume_up_rounded,
