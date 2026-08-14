@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'dart:math';
+import '../data/vocab.dart';
 
 class VocabFlashcardPage extends StatefulWidget {
   const VocabFlashcardPage({super.key});
@@ -8,6 +10,30 @@ class VocabFlashcardPage extends StatefulWidget {
 }
 
 class _VocabFlashcardPageState extends State<VocabFlashcardPage> {
+  Vocab? _currentVocab;
+
+  @override
+  void _randomizeVocab() {
+    if (vocabList.isEmpty) return;
+    final random = Random();
+    int newIndex;
+
+    do {
+      newIndex = random.nextInt(vocabList.length);
+    } while (vocabList.length > 1 &&
+        vocabList[newIndex] == _currentVocab &&
+        _currentVocab != null);
+
+    setState(() {
+      _currentVocab = vocabList[newIndex];
+    });
+  }
+
+  void initState() {
+    super.initState();
+    _randomizeVocab();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -39,7 +65,7 @@ class _VocabFlashcardPageState extends State<VocabFlashcardPage> {
                   children: [
                     Center(
                       child: Text(
-                        "Flash here.",
+                        _currentVocab?.word ?? "Loading...",
                         style: TextStyle(fontSize: 30),
                       ),
                     ),
