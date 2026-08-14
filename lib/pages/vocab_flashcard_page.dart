@@ -11,8 +11,15 @@ class VocabFlashcardPage extends StatefulWidget {
 
 class _VocabFlashcardPageState extends State<VocabFlashcardPage> {
   Vocab? _currentVocab;
+  bool _showMeaning = false;
 
   @override
+  void _toggleMeaning() {
+    setState(() {
+      _showMeaning = !_showMeaning;
+    });
+  }
+
   void _randomizeVocab() {
     if (vocabList.isEmpty) return;
     final random = Random();
@@ -26,6 +33,7 @@ class _VocabFlashcardPageState extends State<VocabFlashcardPage> {
 
     setState(() {
       _currentVocab = vocabList[newIndex];
+      _showMeaning = false;
     });
   }
 
@@ -65,7 +73,10 @@ class _VocabFlashcardPageState extends State<VocabFlashcardPage> {
                   children: [
                     Center(
                       child: Text(
-                        _currentVocab?.word ?? "Loading...",
+                        _showMeaning
+                            ? (_currentVocab?.meaning ?? "")
+                            : (_currentVocab?.word ?? "Loading..."),
+
                         style: TextStyle(fontSize: 30),
                       ),
                     ),
@@ -76,7 +87,9 @@ class _VocabFlashcardPageState extends State<VocabFlashcardPage> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           ElevatedButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              _toggleMeaning();
+                            },
                             style: ElevatedButton.styleFrom(
                               shape: CircleBorder(),
                               padding: EdgeInsets.all(20),
