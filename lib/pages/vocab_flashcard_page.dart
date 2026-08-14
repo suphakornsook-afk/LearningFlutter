@@ -87,7 +87,9 @@ class _VocabFlashcardPageState extends State<VocabFlashcardPage> {
                             child: Icon(Icons.restart_alt, size: 20),
                           ),
                           ElevatedButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              _randomizeVocab();
+                            },
                             style: ElevatedButton.styleFrom(
                               shape: CircleBorder(),
                               padding: EdgeInsets.all(20),
