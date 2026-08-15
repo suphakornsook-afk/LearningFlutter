@@ -14,6 +14,23 @@ class _VocabFlashcardPageState extends State<VocabFlashcardPage> {
   bool _showMeaning = false;
 
   @override
+  Widget _buildFlipTransition(Widget child, Animation<double> animation) {
+    final rotate = Tween<double>(begin: pi, end: 0.0).animate(animation);
+
+    return AnimatedBuilder(
+      animation: rotate,
+      builder: (context, child) {
+        return Transform(
+          transform: Matrix4.rotationY(rotate.value),
+          alignment: Alignment.center,
+          child: child,
+        );
+      },
+
+      child: FadeTransition(opacity: animation, child: child),
+    );
+  }
+
   void _toggleMeaning() {
     setState(() {
       _showMeaning = !_showMeaning;
@@ -72,12 +89,22 @@ class _VocabFlashcardPageState extends State<VocabFlashcardPage> {
                 child: Stack(
                   children: [
                     Center(
-                      child: Text(
-                        _showMeaning
-                            ? (_currentVocab?.meaning ?? "")
-                            : (_currentVocab?.word ?? "Loading..."),
+                      child: AnimatedSwitcher(
+                        duration: Duration(milliseconds: 400),
+                        transitionBuilder: _buildFlipTransition,
 
-                        style: TextStyle(fontSize: 30),
+                        child: Text(
+                          _showMeaning
+                              ? (_currentVocab?.meaning ?? "")
+                              : (_currentVocab?.word ?? "Loading..."),
+
+                          style: TextStyle(fontSize: 30),
+                          key: ValueKey<String>(
+                            _showMeaning
+                                ? (_currentVocab?.meaning ?? "")
+                                : (_currentVocab?.word ?? ""),
+                          ),
+                        ),
                       ),
                     ),
                     Positioned(
